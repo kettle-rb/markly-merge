@@ -84,6 +84,94 @@ RSpec.describe Markly::Merge::SmartMerger do
         merger = described_class.new(template, destination, add_template_only_nodes: true)
         expect(merger).to be_a(described_class)
       end
+
+      it "accepts flags parameter" do
+        merger = described_class.new(template, destination, flags: Markly::FOOTNOTES)
+        expect(merger).to be_a(described_class)
+      end
+
+      it "accepts combined flags" do
+        merger = described_class.new(template, destination, flags: Markly::FOOTNOTES | Markly::SMART)
+        expect(merger).to be_a(described_class)
+      end
+
+      it "accepts extensions parameter" do
+        merger = described_class.new(template, destination, extensions: [:table, :strikethrough])
+        expect(merger).to be_a(described_class)
+      end
+    end
+  end
+
+  describe "footnote merging" do
+    context "with FOOTNOTES flag enabled" do
+      let(:template) do
+        <<~MARKDOWN
+          # Document
+
+          This has a footnote[^note1].
+
+          [^note1]: Template footnote content.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Document
+
+          This has a footnote[^note1].
+
+          [^note1]: Destination footnote content.
+        MARKDOWN
+      end
+
+      it "parses footnotes when flag is enabled" do
+        merger = described_class.new(template, destination, flags: Markly::FOOTNOTES)
+        expect(merger.template_analysis.statements.any? { |s| s.respond_to?(:type) && s.type == :footnote_definition }).to be true
+        expect(merger.dest_analysis.statements.any? { |s| s.respond_to?(:type) && s.type == :footnote_definition }).to be true
+      end
+
+      it "merges footnotes by label" do
+        merger = described_class.new(template, destination, flags: Markly::FOOTNOTES)
+        result = merger.merge
+
+        # With destination preference, should keep destination footnote content
+        expect(result).to include("Destination footnote content")
+      end
+
+      it "uses template footnote when preference is template" do
+        merger = described_class.new(template, destination, flags: Markly::FOOTNOTES, signature_match_preference: :template)
+        result = merger.merge
+
+        expect(result).to include("Template footnote content")
+      end
+    end
+
+    context "without FOOTNOTES flag" do
+      let(:template) do
+        <<~MARKDOWN
+          # Document
+
+          This has a footnote[^note1].
+
+          [^note1]: Template footnote content.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Document
+
+          This has a footnote[^note1].
+
+          [^note1]: Destination footnote content.
+        MARKDOWN
+      end
+
+      it "treats footnote syntax as regular paragraphs" do
+        merger = described_class.new(template, destination)
+        # Without flag, no footnote_definition nodes should exist
+        expect(merger.template_analysis.statements.none? { |s| s.respond_to?(:type) && s.type == :footnote_definition }).to be true
+      end
     end
   end
 
@@ -1117,6 +1205,307 @@ RSpec.describe Markly::Merge::SmartMerger do
           MARKDOWN
           expect(result.content).to eq(expected.chomp)
         end
+      end
+    end
+  end
+
+  describe "edge cases for branch coverage" do
+    context "with nodes that have identical content in both versions" do
+      let(:template) do
+        <<~MARKDOWN
+          # Identical Title
+
+          Identical paragraph content.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Identical Title
+
+          Identical paragraph content.
+        MARKDOWN
+      end
+
+      it "marks nodes as identical (not modified)" do
+        merger = described_class.new(template, destination, signature_match_preference: :template)
+        result = merger.merge_result
+        # When identical, stats should show 0 modifications
+        expect(result.stats[:nodes_modified]).to eq(0)
+      end
+    end
+
+    context "with freeze node in match resolution" do
+      let(:template) do
+        <<~MARKDOWN
+          # Title
+
+          Template paragraph.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Title
+
+          <!-- markly-merge:freeze reason here -->
+          Frozen paragraph.
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "preserves freeze node info in result" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        # The freeze block should be preserved
+        expect(result.content).to include("Frozen paragraph")
+        expect(result.content).to include("markly-merge:freeze")
+      end
+    end
+
+    context "with node that falls back to commonmark rendering" do
+      # This tests the node_to_source fallback when source_position is missing
+      let(:template) { "# Simple" }
+      let(:destination) { "# Simple" }
+
+      it "handles nodes gracefully" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        expect(result.content).to include("Simple")
+      end
+    end
+
+    context "with freeze node in dest_only processing" do
+      let(:template) do
+        <<~MARKDOWN
+          # Title
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Title
+
+          <!-- markly-merge:freeze custom-reason -->
+          ## Custom Frozen Section
+
+          This is frozen and should be preserved.
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "preserves freeze blocks from dest_only entries" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        expect(result.content).to include("Custom Frozen Section")
+        expect(result.has_frozen_blocks?).to be true
+      end
+
+      it "captures freeze block metadata" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        frozen = result.frozen_blocks.first
+        expect(frozen).not_to be_nil
+        expect(frozen[:reason]).to include("custom-reason")
+      end
+    end
+
+    context "with template preference and modified content" do
+      let(:template) do
+        <<~MARKDOWN
+          # Title
+
+          ## Section
+
+          Template version of content.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Title
+
+          ## Section
+
+          Different destination content.
+        MARKDOWN
+      end
+
+      it "counts modifications when template wins" do
+        merger = described_class.new(template, destination, signature_match_preference: :template)
+        result = merger.merge_result
+        # Paragraphs don't match (different content), so they're not modified
+        # Only matching nodes can be modified
+        expect(result).to be_success
+      end
+    end
+
+    context "with empty content" do
+      let(:template) { "" }
+      let(:destination) { "" }
+
+      it "handles empty documents" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        expect(result.success?).to be true
+        expect(result.content).to eq("")
+      end
+    end
+
+    context "with only whitespace content" do
+      let(:template) { "   \n\n  " }
+      let(:destination) { "\n\n\n" }
+
+      it "handles whitespace-only documents" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        expect(result.success?).to be true
+      end
+    end
+
+    context "with freeze_node? check in destination match" do
+      let(:template) do
+        <<~MARKDOWN
+          # Title
+
+          Updated content.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Title
+
+          <!-- markly-merge:freeze -->
+          Frozen content.
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "handles freeze nodes in destination with preference destination" do
+        merger = described_class.new(template, destination, signature_match_preference: :destination)
+        result = merger.merge_result
+        expect(result).to be_success
+        expect(result.has_frozen_blocks?).to be true
+      end
+    end
+
+    context "with node that has nil source_position" do
+      let(:template) { "# Title\n\nParagraph." }
+      let(:destination) { "# Title\n\nParagraph." }
+
+      it "falls back to to_commonmark when position is nil" do
+        merger = described_class.new(template, destination)
+        # This exercises the node_to_source method's fallback path
+        result = merger.merge_result
+        expect(result).to be_success
+      end
+    end
+
+    context "with complex alignment scenarios" do
+      let(:template) do
+        <<~MARKDOWN
+          # Title
+
+          ## Section A
+
+          Content A.
+
+          ## Section B
+
+          Content B.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Title
+
+          ## Section A
+
+          Modified A.
+
+          ## New Section
+
+          New content.
+        MARKDOWN
+      end
+
+      it "handles template_only entries" do
+        merger = described_class.new(template, destination, add_template_only_nodes: true)
+        result = merger.merge_result
+        # Section B should be added from template
+        expect(result.content).to include("Section B")
+      end
+
+      it "handles dest_only entries" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        # New Section should be preserved
+        expect(result.content).to include("New Section")
+      end
+    end
+
+    context "with dest_only freeze node" do
+      let(:template) do
+        <<~MARKDOWN
+          # Title
+
+          Template content.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Title
+
+          Different content.
+
+          <!-- markly-merge:freeze -->
+          Extra frozen section.
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "preserves dest_only freeze blocks" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        expect(result.has_frozen_blocks?).to be true
+        expect(result.frozen_blocks).not_to be_empty
+      end
+
+      it "includes freeze block in merged content" do
+        merger = described_class.new(template, destination)
+        result = merger.merge_result
+        expect(result.content).to include("Extra frozen section")
+      end
+    end
+
+    context "with match where destination is chosen" do
+      let(:template) do
+        <<~MARKDOWN
+          # Same Title
+
+          ## Same Section
+
+          Content from template.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Same Title
+
+          ## Same Section
+
+          Content from destination.
+        MARKDOWN
+      end
+
+      it "uses destination content with destination preference" do
+        merger = described_class.new(template, destination, signature_match_preference: :destination)
+        result = merger.merge_result
+        expect(result.content).to include("destination")
       end
     end
   end

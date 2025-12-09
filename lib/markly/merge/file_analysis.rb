@@ -40,17 +40,19 @@ module Markly
       # @param source [String] Markdown source code to analyze
       # @param freeze_token [String] Token for freeze block markers (default: "markly-merge")
       # @param signature_generator [Proc, nil] Custom signature generator
+      # @param flags [Integer] Markly parse flags (e.g., Markly::FOOTNOTES | Markly::SMART)
       # @param extensions [Array<Symbol>] Markly extensions to enable (e.g., [:table, :strikethrough])
-      def initialize(source, freeze_token: DEFAULT_FREEZE_TOKEN, signature_generator: nil, extensions: [:table])
+      def initialize(source, freeze_token: DEFAULT_FREEZE_TOKEN, signature_generator: nil, flags: Markly::DEFAULT, extensions: [:table])
         @source = source
         @lines = source.split("\n", -1)
         @freeze_token = freeze_token
         @signature_generator = signature_generator
+        @flags = flags
         @extensions = extensions
 
         # Parse the Markdown source
         @document = DebugLogger.time("FileAnalysis#parse") do
-          Markly.parse(source, extensions: @extensions)
+          Markly.parse(source, flags: @flags, extensions: @extensions)
         end
 
         # Extract and integrate all nodes including freeze blocks
@@ -96,6 +98,25 @@ module Markly
       # nodes can match even with different content - this allows the merge preference
       # to determine which version to use.
       #
+      # ## Supported Node Types
+      #
+      # ### Block nodes (top-level):
+      # - `:header` - Content-based: matches by level and text content
+      # - `:paragraph` - Content-based: matches by content hash
+      # - `:code_block` - Content-based: matches by fence info and content hash
+      # - `:list` - Structure-based: matches by type and item count
+      # - `:blockquote` - Content-based: matches by content hash
+      # - `:hrule` - Structure-based: all thematic breaks are equivalent
+      # - `:html` - Content-based: matches by content hash
+      # - `:table` - Content-based: matches by structure and header content
+      # - `:footnote_definition` - Name-based: matches by footnote label
+      # - `:custom_block` - Content-based: matches by content hash
+      #
+      # ### Extension nodes:
+      # - `:strikethrough` - Inline, handled as part of parent content
+      # - `:table_row`, `:table_header`, `:table_cell` - Children of table, not top-level
+      # - tasklist items use `:list_item` type with special attributes
+      #
       # @param node [Markly::Node] The node
       # @return [Array, nil] Signature array
       def compute_markly_signature(node)
@@ -114,6 +135,7 @@ module Markly
           [:code_block, node.fence_info, Digest::SHA256.hexdigest(content)[0, 16]]
         when :list
           # Structure-based: Match lists by type and item count (content may differ)
+          # Note: tasklist items are list_items within a list, with checked/unchecked state
           [:list, node.list_type, count_children(node)]
         when :blockquote
           # Content-based: Match block quotes by content hash
@@ -132,14 +154,20 @@ module Markly
           header_content = extract_table_header_content(node)
           [:table, count_children(node), Digest::SHA256.hexdigest(header_content)[0, 16]]
         when :footnote_definition
-          # Name-based: Match footnotes by name
-          [:footnote_definition, node_name(node)]
+          # Label-based: Match footnotes by their label/name
+          # Footnote definitions have string_content as their label
+          label = safe_string_content(node)
+          [:footnote_definition, label]
+        when :custom_block
+          # Content-based: Match custom blocks by content hash
+          text = extract_text_content(node)
+          [:custom_block, Digest::SHA256.hexdigest(text)[0, 16]]
         else
-          # :nocov: defensive - Markly only produces known node types
-          # Unknown type - use type and position
+          # Extension types (table_row, table_header, table_cell, strikethrough)
+          # and other inline types are children of block nodes, not top-level.
+          # If they somehow appear at top level, use type and position for safety.
           pos = node.source_position
           [:unknown, type, pos&.dig(:start_line)]
-          # :nocov:
         end
       end
 
@@ -313,7 +341,7 @@ module Markly
         parsed_nodes = []
         if content.length > 0
           begin
-            content_doc = Markly.parse(content, extensions: @extensions)
+            content_doc = Markly.parse(content, flags: @flags, extensions: @extensions)
             child = content_doc.first_child
             while child
               parsed_nodes << child

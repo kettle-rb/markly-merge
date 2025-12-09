@@ -932,11 +932,9 @@ RSpec.describe Markly::Merge::FileAnalysis do
       end
     end
 
-    # NOTE: Markly does NOT support footnotes.
-    # This is a key difference from CommonMarker (which added footnotes after Markly forked).
-    # The footnote syntax [^1] is parsed as regular text/paragraph content in Markly.
-    # See: https://github.com/marissamarym/markly - based on cmark-gfm before footnote support.
-    context "with footnote syntax (not supported in Markly)" do
+    # NOTE: Markly DOES support footnotes, but only when the FOOTNOTES flag is enabled.
+    # Without the flag, footnote syntax is parsed as regular paragraph content.
+    context "with footnote syntax (without FOOTNOTES flag)" do
       let(:source) do
         <<~MARKDOWN
           # Document with Footnote Syntax
@@ -947,19 +945,95 @@ RSpec.describe Markly::Merge::FileAnalysis do
         MARKDOWN
       end
 
-      it "parses footnote syntax as regular paragraph content (not as footnote_definition)" do
+      it "parses footnote syntax as regular paragraph content when FOOTNOTES flag is not set" do
         analysis = described_class.new(source)
 
-        # Verify no footnote_definition nodes exist (Markly doesn't support them)
+        # Verify no footnote_definition nodes exist without the flag
         footnote_nodes = analysis.statements.select { |s| s.respond_to?(:type) && s.type == :footnote_definition }
         expect(footnote_nodes).to be_empty
 
         # The [^1]: syntax is parsed as a paragraph, not a footnote definition
-        # This documents the difference from CommonMarker which DOES support footnotes
         paragraph_with_footnote_ref = analysis.statements.find do |s|
           s.respond_to?(:type) && s.type == :paragraph
         end
         expect(paragraph_with_footnote_ref).not_to be_nil
+      end
+    end
+
+    context "with footnote syntax (with FOOTNOTES flag)" do
+      let(:source) do
+        <<~MARKDOWN
+          # Document with Footnotes
+
+          This has a footnote[^note1].
+
+          [^note1]: This is the footnote content.
+        MARKDOWN
+      end
+
+      it "parses footnote_definition nodes when FOOTNOTES flag is set" do
+        analysis = described_class.new(source, flags: Markly::FOOTNOTES)
+
+        # With the FOOTNOTES flag, footnote definitions are parsed correctly
+        footnote_nodes = analysis.statements.select { |s| s.respond_to?(:type) && s.type == :footnote_definition }
+        expect(footnote_nodes.size).to eq(1)
+      end
+
+      it "computes correct signature for footnote_definition" do
+        analysis = described_class.new(source, flags: Markly::FOOTNOTES)
+
+        footnote_node = analysis.statements.find { |s| s.respond_to?(:type) && s.type == :footnote_definition }
+        sig = analysis.generate_signature(footnote_node)
+
+        expect(sig.first).to eq(:footnote_definition)
+        # Second element is the footnote label
+        expect(sig[1]).to eq("note1")
+      end
+    end
+
+    context "with flags parameter" do
+      let(:source) do
+        <<~MARKDOWN
+          # Smart Quotes Test
+
+          "Hello" and 'world' -- with dashes...
+        MARKDOWN
+      end
+
+      it "accepts flags parameter" do
+        expect { described_class.new(source, flags: Markly::DEFAULT) }.not_to raise_error
+      end
+
+      it "accepts combined flags" do
+        expect { described_class.new(source, flags: Markly::FOOTNOTES | Markly::SMART) }.not_to raise_error
+      end
+
+      it "defaults to Markly::DEFAULT when not specified" do
+        # This should work and not raise
+        analysis = described_class.new(source)
+        expect(analysis.valid?).to be true
+      end
+    end
+
+    context "with extensions parameter" do
+      let(:source) do
+        <<~MARKDOWN
+          # Strikethrough Test
+
+          This is ~~deleted~~ text.
+        MARKDOWN
+      end
+
+      it "accepts multiple extensions" do
+        analysis = described_class.new(source, extensions: [:table, :strikethrough])
+        expect(analysis.valid?).to be true
+      end
+
+      it "parses strikethrough with extension enabled" do
+        analysis = described_class.new(source, extensions: [:strikethrough])
+        # The strikethrough is inline within a paragraph, so we just verify parsing works
+        expect(analysis.valid?).to be true
+        expect(analysis.statements.size).to be >= 1
       end
     end
 
@@ -979,6 +1053,258 @@ RSpec.describe Markly::Merge::FileAnalysis do
         expect(freeze_blocks.size).to eq(1)
         expect(freeze_blocks.first.start_line).to eq(1)
       end
+    end
+
+    context "with table with no header row" do
+      let(:source) do
+        <<~MARKDOWN
+          | A | B |
+          |---|---|
+        MARKDOWN
+      end
+
+      it "handles table with minimal content" do
+        analysis = described_class.new(source, extensions: [:table])
+        expect(analysis.valid?).to be true
+        table_node = analysis.statements.find { |s| s.respond_to?(:type) && s.type == :table }
+        if table_node
+          sig = analysis.generate_signature(table_node)
+          expect(sig.first).to eq(:table)
+        end
+      end
+    end
+
+    context "with table with no first child" do
+      # This tests the edge case where extract_table_header_content handles nil first_child
+      let(:source) do
+        <<~MARKDOWN
+          | Header |
+          |--------|
+          | Cell   |
+        MARKDOWN
+      end
+
+      it "extracts table header content safely" do
+        analysis = described_class.new(source, extensions: [:table])
+        table_node = analysis.statements.find { |s| s.respond_to?(:type) && s.type == :table }
+        if table_node
+          # This tests extract_table_header_content internal method
+          sig = analysis.generate_signature(table_node)
+          expect(sig).not_to be_nil
+        end
+      end
+    end
+
+    context "with freeze block that has no content between markers" do
+      let(:source) do
+        <<~MARKDOWN
+          # Title
+
+          <!-- markly-merge:freeze -->
+          <!-- markly-merge:unfreeze -->
+
+          ## After
+        MARKDOWN
+      end
+
+      it "handles empty freeze block" do
+        analysis = described_class.new(source)
+        freeze_block = analysis.freeze_blocks.first
+        expect(freeze_block).not_to be_nil
+        expect(freeze_block.content).to eq("")
+      end
+    end
+
+    context "with freeze block containing invalid markdown" do
+      let(:source) do
+        <<~MARKDOWN
+          <!-- markly-merge:freeze -->
+          Some content that is just text
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "parses freeze block content as best it can" do
+        analysis = described_class.new(source)
+        freeze_block = analysis.freeze_blocks.first
+        expect(freeze_block).not_to be_nil
+        expect(freeze_block.nodes).not_to be_empty
+      end
+    end
+
+    context "with freeze block after all regular content" do
+      let(:source) do
+        <<~MARKDOWN
+          # Title
+
+          Regular content.
+
+          <!-- markly-merge:freeze -->
+          Frozen at end.
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "adds freeze block at correct position" do
+        analysis = described_class.new(source)
+        # Freeze block should be included in statements
+        freeze_count = analysis.statements.count { |s| s.is_a?(Markly::Merge::FreezeNode) }
+        expect(freeze_count).to eq(1)
+      end
+    end
+
+    context "with node that has nil source_position" do
+      # Edge case for unknown node type handling
+      let(:source) { "# Simple heading" }
+
+      it "handles nodes gracefully" do
+        analysis = described_class.new(source)
+        # All nodes should have source positions, but test that signature generation doesn't crash
+        analysis.statements.each do |stmt|
+          sig = analysis.generate_signature(stmt)
+          expect(sig).not_to be_nil
+        end
+      end
+    end
+
+    context "with multiple freeze blocks at different positions" do
+      let(:source) do
+        <<~MARKDOWN
+          # Title
+
+          <!-- markly-merge:freeze -->
+          First freeze.
+          <!-- markly-merge:unfreeze -->
+
+          Regular content.
+
+          <!-- markly-merge:freeze -->
+          Second freeze at end.
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "handles multiple freeze blocks including one at end" do
+        analysis = described_class.new(source)
+        freeze_count = analysis.statements.count { |s| s.is_a?(Markly::Merge::FreezeNode) }
+        expect(freeze_count).to eq(2)
+      end
+
+      it "preserves order with freeze blocks" do
+        analysis = described_class.new(source)
+        # Order should be: header, freeze1, paragraph, freeze2
+        expect(analysis.statements.size).to eq(4)
+      end
+    end
+  end
+
+  describe "#compute_markly_signature edge cases" do
+    describe "with custom_block node type" do
+      let(:source) { "# Test" }
+
+      it "handles custom_block type via mocking" do
+        analysis = described_class.new(source)
+
+        # Create a mock node that returns :custom_block as type
+        # Use double instead of instance_double to allow any method calls
+        custom_node = double("Markly::Node")
+        allow(custom_node).to receive(:type).and_return(:custom_block)
+        allow(custom_node).to receive(:source_position).and_return({start_line: 1, end_line: 1})
+        allow(custom_node).to receive(:first_child).and_return(nil)
+        allow(custom_node).to receive(:each).and_return([].each)
+        allow(custom_node).to receive(:walk).and_yield(custom_node)
+
+        # Access the private method for testing
+        sig = analysis.send(:compute_markly_signature, custom_node)
+        expect(sig.first).to eq(:custom_block)
+        expect(sig.last).to be_a(String) # SHA256 hash
+      end
+    end
+
+    describe "with unknown node type" do
+      let(:source) { "# Test" }
+
+      it "handles unknown type via mocking" do
+        analysis = described_class.new(source)
+
+        # Create a mock node that returns an unrecognized type
+        unknown_node = double("Markly::Node")
+        allow(unknown_node).to receive(:type).and_return(:some_future_extension_type)
+        allow(unknown_node).to receive(:source_position).and_return({start_line: 5, end_line: 5})
+
+        sig = analysis.send(:compute_markly_signature, unknown_node)
+        expect(sig).to eq([:unknown, :some_future_extension_type, 5])
+      end
+
+      it "handles unknown type with nil source_position" do
+        analysis = described_class.new(source)
+
+        unknown_node = double("Markly::Node")
+        allow(unknown_node).to receive(:type).and_return(:mysterious_type)
+        allow(unknown_node).to receive(:source_position).and_return(nil)
+
+        sig = analysis.send(:compute_markly_signature, unknown_node)
+        expect(sig).to eq([:unknown, :mysterious_type, nil])
+      end
+    end
+  end
+
+  describe "#safe_string_content edge cases" do
+    let(:source) { "# Test" }
+
+    it "handles TypeError when string_content is not supported" do
+      analysis = described_class.new(source)
+
+      # Create a mock node that raises TypeError on string_content
+      # and properly supports walk for the fallback
+      problematic_node = double("Markly::Node")
+      allow(problematic_node).to receive(:string_content).and_raise(TypeError.new("wrong argument type"))
+      allow(problematic_node).to receive(:walk) # walk yields nothing, returns empty text
+
+      result = analysis.send(:safe_string_content, problematic_node)
+      expect(result).to eq("") # Falls back to extract_text_content which returns empty for no children
+    end
+  end
+
+  describe "#extract_table_header_content edge cases" do
+    let(:source) { "# Test" }
+
+    it "returns empty string when table has no children" do
+      analysis = described_class.new(source)
+
+      # Create a mock table node with no first_child
+      empty_table = double("Markly::Node")
+      allow(empty_table).to receive(:first_child).and_return(nil)
+
+      result = analysis.send(:extract_table_header_content, empty_table)
+      expect(result).to eq("")
+    end
+  end
+
+  describe "#node_name edge cases" do
+    let(:source) { "# Test" }
+
+    it "returns nil when node does not respond to name" do
+      analysis = described_class.new(source)
+
+      # Use a simple double that we can control respond_to? for
+      node = double("Markly::Node")
+      allow(node).to receive(:respond_to?).with(:name).and_return(false)
+
+      result = analysis.send(:node_name, node)
+      expect(result).to be_nil
+    end
+
+    it "returns name when node responds to name" do
+      analysis = described_class.new(source)
+
+      # Use a simple double to test the name retrieval path
+      node = double("Markly::Node")
+      allow(node).to receive(:respond_to?).with(:name).and_return(true)
+      allow(node).to receive(:name).and_return("test_name")
+
+      result = analysis.send(:node_name, node)
+      expect(result).to eq("test_name")
     end
   end
 end

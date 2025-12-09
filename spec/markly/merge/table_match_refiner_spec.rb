@@ -200,5 +200,25 @@ RSpec.describe Markly::Merge::TableMatchRefiner do
         expect(refiner.send(:table_node?, node)).to be false
       end
     end
+
+    context "with node that has Table in class name" do
+      it "identifies as table by class name" do
+        # Create a mock object with "Table" in its class name
+        table_like = Class.new do
+          def self.name
+            "CustomTableNode"
+          end
+        end.new
+
+        expect(refiner.send(:table_node?, table_like)).to be true
+      end
+    end
+
+    context "with node that doesn't respond to type" do
+      it "returns false for non-table objects" do
+        plain_object = Object.new
+        expect(refiner.send(:table_node?, plain_object)).to be false
+      end
+    end
   end
 end

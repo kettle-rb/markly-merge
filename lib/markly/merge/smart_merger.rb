@@ -85,7 +85,18 @@ module Markly
       #   Default: "markly-merge"
       #   Looks for: <!-- markly-merge:freeze --> / <!-- markly-merge:unfreeze -->
       #
+      # @param flags [Integer] Markly parse flags (e.g., Markly::FOOTNOTES | Markly::SMART).
+      #   Default: Markly::DEFAULT
+      #   Available flags:
+      #   - Markly::FOOTNOTES - Parse footnotes
+      #   - Markly::SMART - Use smart punctuation (curly quotes, etc.)
+      #   - Markly::VALIDATE_UTF8 - Replace illegal sequences with replacement character
+      #   - Markly::LIBERAL_HTML_TAG - Support liberal parsing of inline HTML tags
+      #   - Markly::STRIKETHROUGH_DOUBLE_TILDE - Require double tildes for strikethrough
+      #   - Markly::UNSAFE - Allow raw/custom HTML and unsafe links
+      #
       # @param extensions [Array<Symbol>] Markly extensions to enable (e.g., [:table, :strikethrough])
+      #   Available extensions: :table, :strikethrough, :autolink, :tagfilter, :tasklist
       #
       # @param match_refiner [#call, nil] Optional match refiner for fuzzy matching of
       #   unmatched nodes. Default: nil (fuzzy matching disabled).
@@ -100,6 +111,7 @@ module Markly
         signature_match_preference: :destination,
         add_template_only_nodes: false,
         freeze_token: FileAnalysis::DEFAULT_FREEZE_TOKEN,
+        flags: Markly::DEFAULT,
         extensions: [:table],
         match_refiner: nil
       )
@@ -113,6 +125,7 @@ module Markly
             template_content,
             freeze_token: freeze_token,
             signature_generator: signature_generator,
+            flags: flags,
             extensions: extensions,
           )
         rescue StandardError => e
@@ -125,6 +138,7 @@ module Markly
             dest_content,
             freeze_token: freeze_token,
             signature_generator: signature_generator,
+            flags: flags,
             extensions: extensions,
           )
         rescue StandardError => e
