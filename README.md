@@ -40,7 +40,7 @@
 [🖼️markly-merge-i]: https://logos.galtzo.com/assets/images/kettle-rb/markly-merge/avatar-192px.svg
 [🖼️markly-merge]: https://github.com/kettle-rb/markly-merge
 
-# 🍕 Markly::Merge
+# ☯️ Markly::Merge
 
 [![Version][👽versioni]][👽version] [![GitHub tag (latest SemVer)][⛳️tag-img]][⛳️tag] [![License: MIT][📄license-img]][📄license-ref] [![Downloads Rank][👽dl-ranki]][👽dl-rank] [![Open Source Helpers][👽oss-helpi]][👽oss-help] [![CodeCov Test Coverage][🏀codecovi]][🏀codecov] [![Coveralls Test Coverage][🏀coveralls-img]][🏀coveralls] [![QLTY Test Coverage][🏀qlty-covi]][🏀qlty-cov] [![QLTY Maintainability][🏀qlty-mnti]][🏀qlty-mnt] [![CI Heads][🚎3-hd-wfi]][🚎3-hd-wf] [![CI Runtime Dependencies @ HEAD][🚎12-crh-wfi]][🚎12-crh-wf] [![CI Current][🚎11-c-wfi]][🚎11-c-wf] [![CI Truffle Ruby][🚎9-t-wfi]][🚎9-t-wf] [![CI JRuby][🚎10-j-wfi]][🚎10-j-wf] [![Deps Locked][🚎13-🔒️-wfi]][🚎13-🔒️-wf] [![Deps Unlocked][🚎14-🔓️-wfi]][🚎14-🔓️-wf] [![CI Supported][🚎6-s-wfi]][🚎6-s-wf] [![CI Legacy][🚎4-lg-wfi]][🚎4-lg-wf] [![CI Unsupported][🚎7-us-wfi]][🚎7-us-wf] [![CI Ancient][🚎1-an-wfi]][🚎1-an-wf] [![CI Test Coverage][🚎2-cov-wfi]][🚎2-cov-wf] [![CI Style][🚎5-st-wfi]][🚎5-st-wf] [![CodeQL][🖐codeQL-img]][🖐codeQL] [![Apache SkyWalking Eyes License Compatibility Check][🚎15-🪪-wfi]][🚎15-🪪-wf]
 
@@ -54,7 +54,91 @@
 
 ## 🌻 Synopsis
 
+Markly::Merge is a standalone Ruby module that intelligently merges two versions of a Markdown file using Markly (libcmark-gfm) AST analysis. It's like a smart "git merge" specifically designed for Markdown documentation files. Built on top of [ast-merge](https://github.com/kettle-rb/ast-merge), it shares the same architecture as [prism-merge](https://github.com/kettle-rb/prism-merge) for Ruby source files.
 
+For an alternative using Comrak (Rust), see [commonmarker-merge](https://github.com/kettle-rb/commonmarker-merge).
+
+### Key Features
+
+- **Markly-Powered**: Uses libcmark-gfm for accurate CommonMark + GFM parsing
+- **Structure-Aware**: Understands headings, lists, code blocks, tables, and more
+- **Intelligent**: Matches sections by heading structure and content signatures
+- **Comment-Preserving**: HTML comments are preserved in context
+- **Freeze Block Support**: Respects freeze markers (default: `markly-merge:freeze` / `markly-merge:unfreeze`) for merge control - customizable to match your project's conventions
+- **Full Provenance**: Tracks origin of every node
+- **Standalone**: Minimal dependencies - just `markly` and `ast-merge`
+- **Customizable**:
+  - `signature_generator` - callable custom signature generators
+  - `signature_match_preference` - setting of `:template`, `:destination`, or a Hash for per-node-type preferences
+  - `add_template_only_nodes` - setting to retain sections that do not exist in destination
+  - `freeze_token` - customize freeze block markers (default: `"markly-merge"`)
+
+### Supported Node Types
+
+| Node Type | Signature Format | Matching Behavior |
+|-----------|------------------|-------------------|
+| Heading | `[:heading, level, text]` | Headings match by level and text content |
+| Paragraph | `[:paragraph, text_hash]` | Paragraphs match by content hash |
+| List | `[:list, type, item_count]` | Lists match by type (bullet/ordered) and structure |
+| List Item | `[:list_item, content_sig]` | Items match by content signature |
+| Code Block | `[:code_block, language, info]` | Code blocks match by language and info string |
+| Block Quote | `[:block_quote, content_sig]` | Block quotes match by content signature |
+| Table | `[:table, header_sig]` | Tables match by header structure |
+| HTML Block | `[:html_block, content]` | HTML blocks match by content |
+| Thematic Break | `[:thematic_break]` | Horizontal rules always match |
+
+### Example
+
+```ruby
+require "markly/merge"
+
+template = File.read("template.md")
+destination = File.read("destination.md")
+
+merger = Markly::Merge::SmartMerger.new(template, destination)
+result = merger.merge
+
+File.write("merged.md", result.to_markdown)
+```
+
+### The `*-merge` Gem Family
+
+This gem is part of a family of gems that provide intelligent merging for various file formats:
+
+| Gem | Format | Parser | Description |
+|-----|--------|--------|-------------|
+| [ast-merge][ast-merge] | N/A | N/A | Shared infrastructure for all `*-merge` gems |
+| [prism-merge][prism-merge] | Ruby | [Prism][prism] | Smart merge for Ruby source files |
+| [psych-merge][psych-merge] | YAML | [Psych][psych] | Smart merge for YAML files |
+| [json-merge][json-merge] | JSON | [tree-sitter-json][ts-json] | Smart merge for JSON files |
+| [jsonc-merge][jsonc-merge] | JSONC | [tree-sitter-json][ts-json] | Smart merge for JSON with Comments |
+| [bash-merge][bash-merge] | Bash | [tree-sitter-bash][ts-bash] | Smart merge for Bash scripts |
+| [rbs-merge][rbs-merge] | RBS | [RBS][rbs] | Smart merge for Ruby type signatures |
+| [dotenv-merge][dotenv-merge] | Dotenv | [dotenv][dotenv] | Smart merge for `.env` files |
+| [toml-merge][toml-merge] | TOML | [tree-sitter-toml][ts-toml] | Smart merge for TOML files |
+| [markly-merge][markly-merge] | Markdown | [Markly][markly] | Smart merge for Markdown (CommonMark via libcmark-gfm) |
+| [commonmarker-merge][commonmarker-merge] | Markdown | [Commonmarker][commonmarker] | Smart merge for Markdown (CommonMark via comrak) |
+
+[ast-merge]: https://github.com/kettle-rb/ast-merge
+[prism-merge]: https://github.com/kettle-rb/prism-merge
+[psych-merge]: https://github.com/kettle-rb/psych-merge
+[json-merge]: https://github.com/kettle-rb/json-merge
+[jsonc-merge]: https://github.com/kettle-rb/jsonc-merge
+[bash-merge]: https://github.com/kettle-rb/bash-merge
+[rbs-merge]: https://github.com/kettle-rb/rbs-merge
+[dotenv-merge]: https://github.com/kettle-rb/dotenv-merge
+[toml-merge]: https://github.com/kettle-rb/toml-merge
+[markly-merge]: https://github.com/kettle-rb/markly-merge
+[commonmarker-merge]: https://github.com/kettle-rb/commonmarker-merge
+[prism]: https://github.com/ruby/prism
+[psych]: https://github.com/ruby/psych
+[ts-json]: https://github.com/tree-sitter/tree-sitter-json
+[ts-bash]: https://github.com/tree-sitter/tree-sitter-bash
+[ts-toml]: https://github.com/tree-sitter-grammars/tree-sitter-toml
+[rbs]: https://github.com/ruby/rbs
+[dotenv]: https://github.com/bkeepers/dotenv
+[markly]: https://github.com/kivikakk/markly
+[commonmarker]: https://github.com/gjtorikian/commonmarker
 
 ## 💡 Info you can shake a stick at
 
@@ -169,11 +253,109 @@ NOTE: Be prepared to track down certs for signed gems and add them the same way 
 
 ## ⚙️ Configuration
 
+```ruby
+merger = Markly::Merge::SmartMerger.new(
+  template_content,
+  dest_content,
+  # Which version to prefer when nodes match
+  # :destination (default) - keep destination content
+  # :template - use template content
+  signature_match_preference: :destination,
 
+  # Whether to add template-only nodes to the result
+  # false (default) - only include sections that exist in destination
+  # true - include all template sections
+  add_template_only_nodes: false,
+
+  # Token for freeze block markers
+  # Default: "markly-merge"
+  # Looks for: <!-- markly-merge:freeze --> / <!-- markly-merge:unfreeze -->
+  freeze_token: "markly-merge",
+
+  # Custom signature generator (optional)
+  # Receives a node, returns a signature array or nil
+  signature_generator: ->(node) { [:heading, node.header_level, node.string_content] if node.type == :heading },
+)
+```
 
 ## 🔧 Basic Usage
 
+### Simple Merge
 
+```ruby
+require "markly/merge"
+
+# Template defines the structure
+template = <<~MD
+  # My Project
+
+  ## Installation
+
+  Run `gem install my-project`.
+
+  ## Usage
+
+  Basic usage instructions.
+
+  ## Contributing
+
+  Please read CONTRIBUTING.md.
+MD
+
+# Destination has customizations
+destination = <<~MD
+  # My Project
+
+  ## Installation
+
+  Use bundler for better dependency management:
+
+  ```bash
+  bundle add my-project
+  ```
+
+  ## Custom Section
+
+  This section only exists in destination.
+MD
+
+merger = Markly::Merge::SmartMerger.new(template, destination)
+result = merger.merge
+puts result.to_markdown
+```
+
+### Using Freeze Blocks
+
+Freeze blocks protect sections from being overwritten during merge:
+
+```markdown
+# My Project
+
+## Installation
+
+<!-- markly-merge:freeze Custom install instructions -->
+This installation section has been customized and will be preserved
+during template merges, regardless of what the template contains.
+<!-- markly-merge:unfreeze -->
+
+## Usage
+
+Standard usage section from template.
+```
+
+Content between `<!-- markly-merge:freeze -->` and `<!-- markly-merge:unfreeze -->` markers is preserved from the destination file.
+
+### Adding Template-Only Sections
+
+```ruby
+merger = Markly::Merge::SmartMerger.new(
+  template,
+  destination,
+  add_template_only_nodes: true,
+)
+result = merger.merge
+# Result includes sections from template that don't exist in destination
+```
 
 ## 🦷 FLOSS Funding
 
