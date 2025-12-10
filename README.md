@@ -69,7 +69,7 @@ For an alternative using Comrak (Rust), see [commonmarker-merge](https://github.
 - **Standalone**: Minimal dependencies - just `markly` and `ast-merge`
 - **Customizable**:
   - `signature_generator` - callable custom signature generators
-  - `signature_match_preference` - setting of `:template`, `:destination`, or a Hash for per-node-type preferences
+  - `preference` - setting of `:template`, `:destination`, or a Hash for per-node-type preferences
   - `add_template_only_nodes` - setting to retain sections that do not exist in destination
   - `freeze_token` - customize freeze block markers (default: `"markly-merge"`)
 
@@ -261,7 +261,7 @@ merger = Markly::Merge::SmartMerger.new(
   # Which version to prefer when nodes match
   # :destination (default) - keep destination content
   # :template - use template content
-  signature_match_preference: :destination,
+  preference: :destination,
 
   # Whether to add template-only nodes to the result
   # false (default) - only include sections that exist in destination

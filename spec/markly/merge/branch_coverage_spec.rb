@@ -398,7 +398,7 @@ RSpec.describe "Branch Coverage" do
         end
 
         it "preserves frozen content and records frozen_info" do
-          merger = described_class.new(template, dest, signature_match_preference: :destination)
+          merger = described_class.new(template, dest, preference: :destination)
           result = merger.merge_result
           expect(result.success?).to be true
         end
@@ -410,7 +410,7 @@ RSpec.describe "Branch Coverage" do
         let(:dest) { "# Same\n\nDest para.\n" }
 
         it "handles regular nodes without freeze_node? method" do
-          merger = described_class.new(template, dest, signature_match_preference: :destination)
+          merger = described_class.new(template, dest, preference: :destination)
           result = merger.merge_result
           expect(result.success?).to be true
           # Regular nodes don't have freeze_node? - covers line 216 else

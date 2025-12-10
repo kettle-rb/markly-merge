@@ -88,6 +88,13 @@ module Markly
         end
       end
 
+      # Override to detect Markly nodes for signature generator fallthrough
+      # @param value [Object] The value to check
+      # @return [Boolean] true if this is a fallthrough node
+      def fallthrough_node?(value)
+        value.is_a?(Markly::Node) || value.is_a?(FreezeNode) || super
+      end
+
       # Compute signature for a Markly node.
       #
       # Signatures determine which nodes match between template and destination.

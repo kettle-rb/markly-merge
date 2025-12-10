@@ -64,8 +64,8 @@ RSpec.describe Markly::Merge::SmartMerger do
     end
 
     context "with options" do
-      it "accepts signature_match_preference" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+      it "accepts preference" do
+        merger = described_class.new(template, destination, preference: :template)
         expect(merger.resolver.preference).to eq(:template)
       end
 
@@ -139,7 +139,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "uses template footnote when preference is template" do
-        merger = described_class.new(template, destination, flags: Markly::FOOTNOTES, signature_match_preference: :template)
+        merger = described_class.new(template, destination, flags: Markly::FOOTNOTES, preference: :template)
         result = merger.merge
 
         expect(result).to include("Template footnote content")
@@ -254,7 +254,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       let(:template) { "# Title\n\n## Section\n\nTemplate details." }
       let(:destination) { "# Title\n\n## Section\n\nDestination details." }
 
-      context "when signature_match_preference is :destination (default)" do
+      context "when preference is :destination (default)" do
         it "uses destination version for matched headings" do
           merger = described_class.new(template, destination)
           result = merger.merge_result
@@ -267,9 +267,9 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
       end
 
-      context "when signature_match_preference is :template" do
+      context "when preference is :template" do
         it "uses template version for matched headings" do
-          merger = described_class.new(template, destination, signature_match_preference: :template)
+          merger = described_class.new(template, destination, preference: :template)
           result = merger.merge_result
           # Headings match and template wins (but they're identical)
           expect(result.content).to include("# Title")
@@ -280,7 +280,7 @@ RSpec.describe Markly::Merge::SmartMerger do
           merger = described_class.new(
             template,
             destination,
-            signature_match_preference: :template,
+            preference: :template,
             add_template_only_nodes: true,
           )
           result = merger.merge_result
@@ -433,7 +433,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "tracks nodes modified" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+        merger = described_class.new(template, destination, preference: :template)
         result = merger.merge_result
         expect(result.stats[:nodes_modified]).to be >= 0
       end
@@ -473,7 +473,7 @@ RSpec.describe Markly::Merge::SmartMerger do
 
     context "when resolution is :destination (default)" do
       it "uses destination content" do
-        merger = described_class.new(template, destination, signature_match_preference: :destination)
+        merger = described_class.new(template, destination, preference: :destination)
         result = merger.merge_result
         expect(result.content).to include("Destination paragraph")
       end
@@ -481,7 +481,7 @@ RSpec.describe Markly::Merge::SmartMerger do
 
     context "when resolution is :template" do
       it "prefers template for matched nodes" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+        merger = described_class.new(template, destination, preference: :template)
         result = merger.merge_result
         # With template preference, heading match should use template
         expect(result.content).to include("Heading")
@@ -510,7 +510,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "uses template code block with :template preference and tracks modification" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+        merger = described_class.new(template, destination, preference: :template)
         result = merger.merge_result
         # Code blocks match by fence_info + content hash, so these DON'T match
         # They're treated as separate nodes
@@ -716,7 +716,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "uses template content with template preference" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+        merger = described_class.new(template, destination, preference: :template)
         result = merger.merge_result
         # Heading should match, preference determines which paragraph text
         expect(result.content).to include("Same Heading")
@@ -820,14 +820,14 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "uses template content when preference is :template" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+        merger = described_class.new(template, destination, preference: :template)
         result = merger.merge_result
         expect(result.content).to include("Template item one")
         expect(result.content).not_to include("Destination item one")
       end
 
       it "increments nodes_modified for non-identical matched content" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+        merger = described_class.new(template, destination, preference: :template)
         result = merger.merge_result
         # The list has different content but matches by signature (same type, same item count)
         expect(result.stats[:nodes_modified]).to be >= 1
@@ -891,7 +891,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "uses destination table content" do
-          merger = described_class.new(template, destination, signature_match_preference: :destination)
+          merger = described_class.new(template, destination, preference: :destination)
           result = merger.merge_result
           expect(result.content).to include("999")
           expect(result.content).not_to include("100")
@@ -921,14 +921,14 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "uses template table content" do
-          merger = described_class.new(template, destination, signature_match_preference: :template)
+          merger = described_class.new(template, destination, preference: :template)
           result = merger.merge_result
           expect(result.content).to include("100")
           expect(result.content).not_to include("999")
         end
 
         it "increments nodes_modified stat" do
-          merger = described_class.new(template, destination, signature_match_preference: :template)
+          merger = described_class.new(template, destination, preference: :template)
           result = merger.merge_result
           expect(result.stats[:nodes_modified]).to be >= 1
         end
@@ -960,7 +960,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "includes destination table and template table (both unmatched)" do
-          merger = described_class.new(template, destination, signature_match_preference: :destination)
+          merger = described_class.new(template, destination, preference: :destination)
           result = merger.merge_result
           # Both tables appear since they have different signatures
           expect(result.content).to include("Item")
@@ -968,7 +968,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "excludes template table when add_template_only_nodes is false" do
-          merger = described_class.new(template, destination, signature_match_preference: :destination, add_template_only_nodes: false)
+          merger = described_class.new(template, destination, preference: :destination, add_template_only_nodes: false)
           result = merger.merge_result
           expect(result.content).to include("Item")
           expect(result.content).to include("Amount")
@@ -998,7 +998,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "includes both tables since they have different signatures" do
-          merger = described_class.new(template, destination, signature_match_preference: :template)
+          merger = described_class.new(template, destination, preference: :template)
           result = merger.merge_result
           # Both tables appear since they have different signatures
           expect(result.content).to include("Item")
@@ -1006,7 +1006,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "includes only template table when add_template_only_nodes is true (default) and destination table" do
-          merger = described_class.new(template, destination, signature_match_preference: :template, add_template_only_nodes: true)
+          merger = described_class.new(template, destination, preference: :template, add_template_only_nodes: true)
           result = merger.merge_result
           # Template table is added as template_only, destination table is dest_only
           expect(result.content).to include("Name")
@@ -1043,14 +1043,14 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "includes destination table (dest_only) with extra row" do
-          merger = described_class.new(template, destination, signature_match_preference: :destination)
+          merger = described_class.new(template, destination, preference: :destination)
           result = merger.merge_result
           expect(result.content).to include("bar")
           expect(result.content).to include("200")
         end
 
         it "excludes template table when add_template_only_nodes is false" do
-          merger = described_class.new(template, destination, signature_match_preference: :destination, add_template_only_nodes: false)
+          merger = described_class.new(template, destination, preference: :destination, add_template_only_nodes: false)
           result = merger.merge_result
           expected = <<~MARKDOWN
             # Data
@@ -1086,14 +1086,14 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "includes destination table as dest_only regardless of preference" do
-          merger = described_class.new(template, destination, signature_match_preference: :template)
+          merger = described_class.new(template, destination, preference: :template)
           result = merger.merge_result
           # dest_only entries are always included
           expect(result.content).to include("bar")
         end
 
         it "includes both tables when add_template_only_nodes is true" do
-          merger = described_class.new(template, destination, signature_match_preference: :template, add_template_only_nodes: true)
+          merger = described_class.new(template, destination, preference: :template, add_template_only_nodes: true)
           result = merger.merge_result
           # dest_only table (with bar) comes first, then template_only table (without bar)
           expected = <<~MARKDOWN
@@ -1134,13 +1134,13 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "includes destination table without the extra row" do
-          merger = described_class.new(template, destination, signature_match_preference: :destination)
+          merger = described_class.new(template, destination, preference: :destination)
           result = merger.merge_result
           expect(result.content).to include("foo")
         end
 
         it "excludes template table when add_template_only_nodes is false" do
-          merger = described_class.new(template, destination, signature_match_preference: :destination, add_template_only_nodes: false)
+          merger = described_class.new(template, destination, preference: :destination, add_template_only_nodes: false)
           result = merger.merge_result
           expected = <<~MARKDOWN
             # Data
@@ -1175,7 +1175,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "includes both tables when add_template_only_nodes is true" do
-          merger = described_class.new(template, destination, signature_match_preference: :template, add_template_only_nodes: true)
+          merger = described_class.new(template, destination, preference: :template, add_template_only_nodes: true)
           result = merger.merge_result
           # dest_only table (without bar) comes first, then template_only table (with bar)
           expected = <<~MARKDOWN
@@ -1194,7 +1194,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
 
         it "includes only destination table when add_template_only_nodes is false" do
-          merger = described_class.new(template, destination, signature_match_preference: :template, add_template_only_nodes: false)
+          merger = described_class.new(template, destination, preference: :template, add_template_only_nodes: false)
           result = merger.merge_result
           expected = <<~MARKDOWN
             # Data
@@ -1228,7 +1228,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "marks nodes as identical (not modified)" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+        merger = described_class.new(template, destination, preference: :template)
         result = merger.merge_result
         # When identical, stats should show 0 modifications
         expect(result.stats[:nodes_modified]).to eq(0)
@@ -1332,7 +1332,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "counts modifications when template wins" do
-        merger = described_class.new(template, destination, signature_match_preference: :template)
+        merger = described_class.new(template, destination, preference: :template)
         result = merger.merge_result
         # Paragraphs don't match (different content), so they're not modified
         # Only matching nodes can be modified
@@ -1383,7 +1383,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "handles freeze nodes in destination with preference destination" do
-        merger = described_class.new(template, destination, signature_match_preference: :destination)
+        merger = described_class.new(template, destination, preference: :destination)
         result = merger.merge_result
         expect(result).to be_success
         expect(result.has_frozen_blocks?).to be true
@@ -1503,7 +1503,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "uses destination content with destination preference" do
-        merger = described_class.new(template, destination, signature_match_preference: :destination)
+        merger = described_class.new(template, destination, preference: :destination)
         result = merger.merge_result
         expect(result.content).to include("destination")
       end

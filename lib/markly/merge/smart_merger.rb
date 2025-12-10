@@ -12,6 +12,7 @@ module Markly
     # - Preserve destination customizations (default)
     # - Apply template updates
     # - Add new sections from template
+    # - Inner-merge fenced code blocks using language-specific mergers (default: enabled)
     #
     # @example Basic merge (destination customizations preserved)
     #   merger = SmartMerger.new(template_content, dest_content)
@@ -24,7 +25,7 @@ module Markly
     #   merger = SmartMerger.new(
     #     template_content,
     #     dest_content,
-    #     signature_match_preference: :template,
+    #     preference: :template,
     #     add_template_only_nodes: true
     #   )
     #   result = merger.merge
@@ -43,9 +44,17 @@ module Markly
     #     signature_generator: sig_gen
     #   )
     #
+    # @example Disable inner-merge for code blocks
+    #   merger = SmartMerger.new(
+    #     template_content,
+    #     dest_content,
+    #     inner_merge_code_blocks: false
+    #   )
+    #
     # @see FileAnalysis
     # @see FileAligner
     # @see ConflictResolver
+    # @see CodeBlockMerger
     # @see MergeResult
     class SmartMerger
       # @return [FileAnalysis] Analysis of the template file
@@ -60,6 +69,9 @@ module Markly
       # @return [ConflictResolver] Resolver for handling conflicting content
       attr_reader :resolver
 
+      # @return [CodeBlockMerger, nil] Merger for fenced code blocks
+      attr_reader :code_block_merger
+
       # Creates a new SmartMerger for intelligent Markdown file merging.
       #
       # @param template_content [String] Template Markdown source code
@@ -71,7 +83,7 @@ module Markly
       #   - `nil` to indicate the node should have no signature
       #   - The original node to fall through to default signature computation
       #
-      # @param signature_match_preference [Symbol] Controls which version to use when nodes
+      # @param preference [Symbol] Controls which version to use when nodes
       #   have matching signatures but different content:
       #   - `:destination` (default) - Use destination version (preserves customizations)
       #   - `:template` - Use template version (applies updates)
@@ -80,6 +92,12 @@ module Markly
       #   exist in template:
       #   - `false` (default) - Skip template-only nodes
       #   - `true` - Add template-only nodes to result
+      #
+      # @param inner_merge_code_blocks [Boolean, CodeBlockMerger] Controls inner-merge for
+      #   fenced code blocks:
+      #   - `true` (default) - Enable inner-merge using default CodeBlockMerger
+      #   - `false` - Disable inner-merge (use standard conflict resolution)
+      #   - `CodeBlockMerger` instance - Use custom CodeBlockMerger
       #
       # @param freeze_token [String] Token to use for freeze block markers.
       #   Default: "markly-merge"
@@ -108,16 +126,29 @@ module Markly
         template_content,
         dest_content,
         signature_generator: nil,
-        signature_match_preference: :destination,
+        preference: :destination,
         add_template_only_nodes: false,
+        inner_merge_code_blocks: true,
         freeze_token: FileAnalysis::DEFAULT_FREEZE_TOKEN,
         flags: Markly::DEFAULT,
         extensions: [:table],
         match_refiner: nil
       )
-        @signature_match_preference = signature_match_preference
+        @preference = preference
         @add_template_only_nodes = add_template_only_nodes
         @match_refiner = match_refiner
+
+        # Set up code block merger
+        @code_block_merger = case inner_merge_code_blocks
+        when true
+          CodeBlockMerger.new
+        when false
+          nil
+        when CodeBlockMerger
+          inner_merge_code_blocks
+        else
+          raise ArgumentError, "inner_merge_code_blocks must be true, false, or a CodeBlockMerger instance"
+        end
 
         # Parse template
         begin
@@ -147,7 +178,7 @@ module Markly
 
         @aligner = FileAligner.new(@template_analysis, @dest_analysis, match_refiner: @match_refiner)
         @resolver = ConflictResolver.new(
-          preference: @signature_match_preference,
+          preference: @preference,
           template_analysis: @template_analysis,
           dest_analysis: @dest_analysis,
         )
@@ -233,9 +264,18 @@ module Markly
       # @param stats [Hash] Statistics hash to update
       # @return [Array] [content_string, frozen_block_info]
       def process_match(entry, stats)
+        template_node = entry[:template_node]
+        dest_node = entry[:dest_node]
+
+        # Try inner-merge for code blocks first
+        if @code_block_merger && code_block_node?(template_node) && code_block_node?(dest_node)
+          inner_result = try_inner_merge_code_block(template_node, dest_node, stats)
+          return inner_result if inner_result
+        end
+
         resolution = @resolver.resolve(
-          entry[:template_node],
-          entry[:dest_node],
+          template_node,
+          dest_node,
           template_index: entry[:template_index],
           dest_index: entry[:dest_index],
         )
@@ -245,19 +285,54 @@ module Markly
         content = case resolution[:source]
         when :template
           stats[:nodes_modified] += 1 if resolution[:decision] != :identical
-          node_to_source(entry[:template_node], @template_analysis)
+          node_to_source(template_node, @template_analysis)
         when :destination
-          if entry[:dest_node].respond_to?(:freeze_node?) && entry[:dest_node].freeze_node?
+          if dest_node.respond_to?(:freeze_node?) && dest_node.freeze_node?
             frozen_info = {
-              start_line: entry[:dest_node].start_line,
-              end_line: entry[:dest_node].end_line,
-              reason: entry[:dest_node].reason,
+              start_line: dest_node.start_line,
+              end_line: dest_node.end_line,
+              reason: dest_node.reason,
             }
           end
-          node_to_source(entry[:dest_node], @dest_analysis)
+          node_to_source(dest_node, @dest_analysis)
         end
 
         [content, frozen_info]
+      end
+
+      # Check if a node is a code block.
+      #
+      # @param node [Object] Node to check
+      # @return [Boolean] true if the node is a code block
+      def code_block_node?(node)
+        return false if node.respond_to?(:freeze_node?) && node.freeze_node?
+
+        node.respond_to?(:type) && node.type == :code_block
+      end
+
+      # Try to inner-merge two code block nodes.
+      #
+      # @param template_node [Markly::Node] Template code block
+      # @param dest_node [Markly::Node] Destination code block
+      # @param stats [Hash] Statistics hash to update
+      # @return [Array, nil] [content_string, nil] if merged, nil to fall back to standard resolution
+      def try_inner_merge_code_block(template_node, dest_node, stats)
+        result = @code_block_merger.merge_code_blocks(
+          template_node,
+          dest_node,
+          preference: @preference,
+          add_template_only_nodes: @add_template_only_nodes,
+        )
+
+        if result[:merged]
+          stats[:nodes_modified] += 1 unless result.dig(:stats, :decision) == :identical
+          stats[:inner_merges] ||= 0
+          stats[:inner_merges] += 1
+          [result[:content], nil]
+        else
+          DebugLogger.debug("Inner-merge skipped", {reason: result[:reason]})
+          nil # Fall back to standard resolution
+        end
       end
 
       # Process a template-only node

@@ -83,6 +83,7 @@ module Markly
     #   end
     class DestinationParseError < ParseError; end
 
+    autoload :CodeBlockMerger, "markly/merge/code_block_merger"
     autoload :DebugLogger, "markly/merge/debug_logger"
     autoload :FreezeNode, "markly/merge/freeze_node"
     autoload :MergeResult, "markly/merge/merge_result"
