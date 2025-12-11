@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.name = "markly-merge"
   spec.version = gem_version
   spec.authors = ["Peter H. Boling"]
-  spec.email = ["peter.boling@gmail.com"]
+  spec.email = ["floss@galtzo.com"]
 
   spec.summary = "☯️ Intelligent Markdown file merging using Markly AST analysis"
   spec.description = "☯️ Markly::Merge provides smart Markdown file merging using libcmark-gfm via Markly. It understands document structure including headings, lists, code blocks, and tables. Perfect for merging documentation templates with customized files."
