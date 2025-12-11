@@ -15,6 +15,7 @@ else
   gem "dotenv-merge", path: "../../../dotenv-merge"     # dotenv code blocks
   gem "json-merge", path: "../../../json-merge"         # JSON code blocks
   gem "jsonc-merge", path: "../../../jsonc-merge"       # JSONC code blocks
+  gem "markdown-merge", path: "../../../markdown-merge" # generic markdown tools
   gem "prism-merge", path: "../../../prism-merge"       # Ruby code blocks
   gem "psych-merge", path: "../../../psych-merge"       # YAML code blocks
   gem "rbs-merge", path: "../../../rbs-merge"           # RBS code blocks

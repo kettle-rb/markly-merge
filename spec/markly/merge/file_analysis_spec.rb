@@ -1198,7 +1198,7 @@ RSpec.describe Markly::Merge::FileAnalysis do
     end
   end
 
-  describe "#compute_markly_signature edge cases" do
+  describe "#compute_parser_signature edge cases" do
     describe "with custom_block node type" do
       let(:source) { "# Test" }
 
@@ -1215,7 +1215,7 @@ RSpec.describe Markly::Merge::FileAnalysis do
         allow(custom_node).to receive(:walk).and_yield(custom_node)
 
         # Access the private method for testing
-        sig = analysis.send(:compute_markly_signature, custom_node)
+        sig = analysis.send(:compute_parser_signature, custom_node)
         expect(sig.first).to eq(:custom_block)
         expect(sig.last).to be_a(String) # SHA256 hash
       end
@@ -1232,7 +1232,7 @@ RSpec.describe Markly::Merge::FileAnalysis do
         allow(unknown_node).to receive(:type).and_return(:some_future_extension_type)
         allow(unknown_node).to receive(:source_position).and_return({start_line: 5, end_line: 5})
 
-        sig = analysis.send(:compute_markly_signature, unknown_node)
+        sig = analysis.send(:compute_parser_signature, unknown_node)
         expect(sig).to eq([:unknown, :some_future_extension_type, 5])
       end
 
@@ -1243,7 +1243,7 @@ RSpec.describe Markly::Merge::FileAnalysis do
         allow(unknown_node).to receive(:type).and_return(:mysterious_type)
         allow(unknown_node).to receive(:source_position).and_return(nil)
 
-        sig = analysis.send(:compute_markly_signature, unknown_node)
+        sig = analysis.send(:compute_parser_signature, unknown_node)
         expect(sig).to eq([:unknown, :mysterious_type, nil])
       end
     end

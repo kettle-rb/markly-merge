@@ -2,7 +2,9 @@
 
 module Markly
   module Merge
-    # Orchestrates the smart merge process for Markdown files.
+    # Orchestrates the smart merge process for Markdown files using Markly.
+    #
+    # Extends Markdown::Merge::SmartMergerBase with Markly-specific parsing.
     #
     # Uses FileAnalysis, FileAligner, ConflictResolver, and MergeResult to
     # merge two Markdown files intelligently. Freeze blocks marked with
@@ -52,26 +54,8 @@ module Markly
     #   )
     #
     # @see FileAnalysis
-    # @see FileAligner
-    # @see ConflictResolver
-    # @see CodeBlockMerger
-    # @see MergeResult
-    class SmartMerger
-      # @return [FileAnalysis] Analysis of the template file
-      attr_reader :template_analysis
-
-      # @return [FileAnalysis] Analysis of the destination file
-      attr_reader :dest_analysis
-
-      # @return [FileAligner] Aligner for finding matches and differences
-      attr_reader :aligner
-
-      # @return [ConflictResolver] Resolver for handling conflicting content
-      attr_reader :resolver
-
-      # @return [CodeBlockMerger, nil] Merger for fenced code blocks
-      attr_reader :code_block_merger
-
+    # @see Markdown::Merge::SmartMergerBase
+    class SmartMerger < Markdown::Merge::SmartMergerBase
       # Creates a new SmartMerger for intelligent Markdown file merging.
       #
       # @param template_content [String] Template Markdown source code
@@ -130,251 +114,63 @@ module Markly
         add_template_only_nodes: false,
         inner_merge_code_blocks: true,
         freeze_token: FileAnalysis::DEFAULT_FREEZE_TOKEN,
-        flags: Markly::DEFAULT,
+        flags: ::Markly::DEFAULT,
         extensions: [:table],
         match_refiner: nil
       )
-        @preference = preference
-        @add_template_only_nodes = add_template_only_nodes
-        @match_refiner = match_refiner
-
-        # Set up code block merger
-        @code_block_merger = case inner_merge_code_blocks
-        when true
-          CodeBlockMerger.new
-        when false
-          nil
-        when CodeBlockMerger
-          inner_merge_code_blocks
-        else
-          raise ArgumentError, "inner_merge_code_blocks must be true, false, or a CodeBlockMerger instance"
-        end
-
-        # Parse template
-        begin
-          @template_analysis = FileAnalysis.new(
-            template_content,
-            freeze_token: freeze_token,
-            signature_generator: signature_generator,
-            flags: flags,
-            extensions: extensions,
-          )
-        rescue StandardError => e
-          raise TemplateParseError.new(errors: [e])
-        end
-
-        # Parse destination
-        begin
-          @dest_analysis = FileAnalysis.new(
-            dest_content,
-            freeze_token: freeze_token,
-            signature_generator: signature_generator,
-            flags: flags,
-            extensions: extensions,
-          )
-        rescue StandardError => e
-          raise DestinationParseError.new(errors: [e])
-        end
-
-        @aligner = FileAligner.new(@template_analysis, @dest_analysis, match_refiner: @match_refiner)
-        @resolver = ConflictResolver.new(
-          preference: @preference,
-          template_analysis: @template_analysis,
-          dest_analysis: @dest_analysis,
+        @flags = flags
+        @extensions = extensions
+        super(
+          template_content,
+          dest_content,
+          signature_generator: signature_generator,
+          preference: preference,
+          add_template_only_nodes: add_template_only_nodes,
+          inner_merge_code_blocks: inner_merge_code_blocks,
+          freeze_token: freeze_token,
+          match_refiner: match_refiner,
+          flags: flags,
+          extensions: extensions,
         )
       end
 
-      # Perform the merge operation and return the merged content as a string.
+      # Create a FileAnalysis instance for Markly parsing.
       #
-      # @return [String] The merged Markdown content
-      def merge
-        merge_result.content
-      end
-
-      # Perform the merge operation and return the full MergeResult object.
-      #
-      # @return [MergeResult] The merge result containing merged content and metadata
-      def merge_result
-        return @merge_result if @merge_result
-
-        @merge_result = DebugLogger.time("SmartMerger#merge") do
-          start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-
-          alignment = DebugLogger.time("SmartMerger#align") do
-            @aligner.align
-          end
-
-          DebugLogger.debug("Alignment complete", {
-            total_entries: alignment.size,
-            matches: alignment.count { |e| e[:type] == :match },
-            template_only: alignment.count { |e| e[:type] == :template_only },
-            dest_only: alignment.count { |e| e[:type] == :dest_only },
-          })
-
-          merged_parts, stats, frozen_blocks, conflicts = DebugLogger.time("SmartMerger#process") do
-            process_alignment(alignment)
-          end
-
-          end_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-          stats[:merge_time_ms] = ((end_time - start_time) * 1000).round(2)
-
-          MergeResult.new(
-            content: merged_parts.join("\n\n"),
-            conflicts: conflicts,
-            frozen_blocks: frozen_blocks,
-            stats: stats,
-          )
-        end
-      end
-
-      private
-
-      # Process alignment entries and build result
-      #
-      # @param alignment [Array<Hash>] Alignment entries
-      # @return [Array] [merged_parts, stats, frozen_blocks, conflicts]
-      def process_alignment(alignment)
-        merged_parts = []
-        frozen_blocks = []
-        conflicts = []
-        stats = {nodes_added: 0, nodes_removed: 0, nodes_modified: 0}
-
-        alignment.each do |entry|
-          case entry[:type]
-          when :match
-            part, frozen = process_match(entry, stats)
-            merged_parts << part if part
-            frozen_blocks << frozen if frozen
-          when :template_only
-            part = process_template_only(entry, stats)
-            merged_parts << part if part
-          when :dest_only
-            part, frozen = process_dest_only(entry, stats)
-            merged_parts << part if part
-            frozen_blocks << frozen if frozen
-          end
-        end
-
-        [merged_parts, stats, frozen_blocks, conflicts]
-      end
-
-      # Process a matched node pair
-      #
-      # @param entry [Hash] Alignment entry
-      # @param stats [Hash] Statistics hash to update
-      # @return [Array] [content_string, frozen_block_info]
-      def process_match(entry, stats)
-        template_node = entry[:template_node]
-        dest_node = entry[:dest_node]
-
-        # Try inner-merge for code blocks first
-        if @code_block_merger && code_block_node?(template_node) && code_block_node?(dest_node)
-          inner_result = try_inner_merge_code_block(template_node, dest_node, stats)
-          return inner_result if inner_result
-        end
-
-        resolution = @resolver.resolve(
-          template_node,
-          dest_node,
-          template_index: entry[:template_index],
-          dest_index: entry[:dest_index],
+      # @param content [String] Markdown content to analyze
+      # @param options [Hash] Analysis options
+      # @return [FileAnalysis] Markly-specific file analysis
+      def create_file_analysis(content, **opts)
+        FileAnalysis.new(
+          content,
+          freeze_token: opts[:freeze_token],
+          signature_generator: opts[:signature_generator],
+          flags: opts[:flags] || @flags,
+          extensions: opts[:extensions] || @extensions,
         )
-
-        frozen_info = nil
-
-        content = case resolution[:source]
-        when :template
-          stats[:nodes_modified] += 1 if resolution[:decision] != :identical
-          node_to_source(template_node, @template_analysis)
-        when :destination
-          if dest_node.respond_to?(:freeze_node?) && dest_node.freeze_node?
-            frozen_info = {
-              start_line: dest_node.start_line,
-              end_line: dest_node.end_line,
-              reason: dest_node.reason,
-            }
-          end
-          node_to_source(dest_node, @dest_analysis)
-        end
-
-        [content, frozen_info]
       end
 
-      # Check if a node is a code block.
+      # Returns the TemplateParseError class to use.
       #
-      # @param node [Object] Node to check
-      # @return [Boolean] true if the node is a code block
-      def code_block_node?(node)
-        return false if node.respond_to?(:freeze_node?) && node.freeze_node?
-
-        node.respond_to?(:type) && node.type == :code_block
+      # @return [Class] Markly::Merge::TemplateParseError
+      def template_parse_error_class
+        TemplateParseError
       end
 
-      # Try to inner-merge two code block nodes.
+      # Returns the DestinationParseError class to use.
       #
-      # @param template_node [Markly::Node] Template code block
-      # @param dest_node [Markly::Node] Destination code block
-      # @param stats [Hash] Statistics hash to update
-      # @return [Array, nil] [content_string, nil] if merged, nil to fall back to standard resolution
-      def try_inner_merge_code_block(template_node, dest_node, stats)
-        result = @code_block_merger.merge_code_blocks(
-          template_node,
-          dest_node,
-          preference: @preference,
-          add_template_only_nodes: @add_template_only_nodes,
-        )
-
-        if result[:merged]
-          stats[:nodes_modified] += 1 unless result.dig(:stats, :decision) == :identical
-          stats[:inner_merges] ||= 0
-          stats[:inner_merges] += 1
-          [result[:content], nil]
-        else
-          DebugLogger.debug("Inner-merge skipped", {reason: result[:reason]})
-          nil # Fall back to standard resolution
-        end
+      # @return [Class] Markly::Merge::DestinationParseError
+      def destination_parse_error_class
+        DestinationParseError
       end
 
-      # Process a template-only node
-      #
-      # @param entry [Hash] Alignment entry
-      # @param stats [Hash] Statistics hash to update
-      # @return [String, nil] Content string or nil
-      def process_template_only(entry, stats)
-        return unless @add_template_only_nodes
-
-        stats[:nodes_added] += 1
-        node_to_source(entry[:template_node], @template_analysis)
-      end
-
-      # Process a destination-only node
-      #
-      # @param entry [Hash] Alignment entry
-      # @param stats [Hash] Statistics hash to update
-      # @return [Array] [content_string, frozen_block_info]
-      def process_dest_only(entry, stats)
-        frozen_info = nil
-
-        if entry[:dest_node].respond_to?(:freeze_node?) && entry[:dest_node].freeze_node?
-          frozen_info = {
-            start_line: entry[:dest_node].start_line,
-            end_line: entry[:dest_node].end_line,
-            reason: entry[:dest_node].reason,
-          }
-        end
-
-        content = node_to_source(entry[:dest_node], @dest_analysis)
-        [content, frozen_info]
-      end
-
-      # Convert a node to its source text
+      # Convert a node to its source text.
       #
       # @param node [Object] Node to convert
       # @param analysis [FileAnalysis] Analysis for source lookup
       # @return [String] Source text
       def node_to_source(node, analysis)
-        case node
-        when FreezeNode
+        # Check for any FreezeNode type (base class or subclass)
+        if node.is_a?(Ast::Merge::FreezeNodeBase)
           node.full_text
         else
           pos = node.source_position

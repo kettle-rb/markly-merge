@@ -7,6 +7,7 @@ require "set"
 
 # Shared merge infrastructure
 require "ast/merge"
+require "markdown/merge"
 
 # This gem
 require_relative "merge/version"
@@ -37,11 +38,11 @@ module Markly
   # @see FreezeNode For understanding freeze block behavior
   module Merge
     # Base error class for Markly::Merge
-    # Inherits from Ast::Merge::Error for consistency across merge gems.
-    class Error < Ast::Merge::Error; end
+    # Inherits from Markdown::Merge::Error for consistency across merge gems.
+    class Error < Markdown::Merge::Error; end
 
     # Raised when a Markdown file has parsing errors.
-    # Inherits from Ast::Merge::ParseError for consistency across merge gems.
+    # Inherits from Markdown::Merge::ParseError for consistency across merge gems.
     #
     # @example Handling parse errors
     #   begin
@@ -50,7 +51,7 @@ module Markly
     #     puts "Markdown syntax error: #{e.message}"
     #     e.errors.each { |error| puts "  #{error}" }
     #   end
-    class ParseError < Ast::Merge::ParseError
+    class ParseError < Markdown::Merge::ParseError
       # @param message [String, nil] Error message (auto-generated if nil)
       # @param content [String, nil] The Markdown source that failed to parse
       # @param errors [Array] Parse errors from Markly
@@ -83,16 +84,18 @@ module Markly
     #   end
     class DestinationParseError < ParseError; end
 
-    autoload :CodeBlockMerger, "markly/merge/code_block_merger"
+    # Re-export shared classes from markdown-merge
+    FileAligner = Markdown::Merge::FileAligner
+    ConflictResolver = Markdown::Merge::ConflictResolver
+    MergeResult = Markdown::Merge::MergeResult
+    TableMatchAlgorithm = Markdown::Merge::TableMatchAlgorithm
+    TableMatchRefiner = Markdown::Merge::TableMatchRefiner
+    CodeBlockMerger = Markdown::Merge::CodeBlockMerger
+
     autoload :DebugLogger, "markly/merge/debug_logger"
     autoload :FreezeNode, "markly/merge/freeze_node"
-    autoload :MergeResult, "markly/merge/merge_result"
     autoload :FileAnalysis, "markly/merge/file_analysis"
-    autoload :FileAligner, "markly/merge/file_aligner"
-    autoload :ConflictResolver, "markly/merge/conflict_resolver"
     autoload :SmartMerger, "markly/merge/smart_merger"
-    autoload :TableMatchAlgorithm, "markly/merge/table_match_algorithm"
-    autoload :TableMatchRefiner, "markly/merge/table_match_refiner"
   end
 end
 
