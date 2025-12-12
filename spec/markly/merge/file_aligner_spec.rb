@@ -457,7 +457,6 @@ RSpec.describe Markly::Merge::FileAligner do
 
       it "incorporates refiner matches into alignment" do
         # Create a simple mock refiner that returns matches
-        mock_match = double("MatchScore", template_node: nil, dest_node: nil, score: 0.8)
         refiner = ->(template_nodes, dest_nodes, _context) do
           # Return empty array to not interfere with regular matching
           []
@@ -532,10 +531,12 @@ RSpec.describe Markly::Merge::FileAligner do
         template_analysis = Markly::Merge::FileAnalysis.new(template_source)
         dest_analysis = Markly::Merge::FileAnalysis.new(dest_source)
 
-        mock_match = double("MatchScore",
+        mock_match = double(
+          "MatchScore",
           template_node: template_analysis.statements.first,
           dest_node: dest_analysis.statements.first,
-          score: 0.9)
+          score: 0.9,
+        )
         refiner = ->(_t, _d, _c) { [mock_match] }
 
         aligner = described_class.new(template_analysis, dest_analysis, match_refiner: refiner)
@@ -568,9 +569,7 @@ RSpec.describe Markly::Merge::FileAligner do
       end
 
       it "does not call refiner when all nodes are already matched" do
-        refiner_called = false
         refiner = ->(_t, _d, _c) do
-          refiner_called = true
           []
         end
 
@@ -580,11 +579,11 @@ RSpec.describe Markly::Merge::FileAligner do
           match_refiner: refiner,
         )
 
-        aligner.align
+        alignment = aligner.align
 
         # Refiner may or may not be called depending on implementation
         # The key is that alignment works correctly
-        expect(true).to be true
+        expect(alignment).to be_an(Array)
       end
     end
 

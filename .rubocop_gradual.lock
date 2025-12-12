@@ -1,0 +1,75 @@
+{
+  "README.md:1124584082": [
+    [307, 15, 1, "Lint/Syntax: unterminated string meets end of file\n(Using Ruby 3.2 parser; configure using `TargetRubyVersion` parameter, under `AllCops`)", 177561]
+  ],
+  "spec/markly/merge/branch_coverage_spec.rb:1610524572": [
+    [6, 16, 17, "RSpec/DescribeClass: The first argument to describe should be the class or module being tested.", 4201859935]
+  ],
+  "spec/markly/merge/conflict_resolver_spec.rb:1695829329": [
+    [264, 9, 56, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [265].", 2341167545],
+    [265, 9, 70, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [264].", 3702131378],
+    [276, 9, 68, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [277].", 3502115566],
+    [277, 9, 68, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [276].", 3127768710]
+  ],
+  "spec/markly/merge/file_aligner_spec.rb:1831522609": [
+    [613, 37, 14, "RSpec/VerifiedDoubleReference: Use a constant class reference for verified doubles. String references are not verifying unless the class is loaded.", 2732381477],
+    [614, 9, 57, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [615].", 2238970195],
+    [615, 9, 90, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [614].", 3346318849],
+    [636, 37, 14, "RSpec/VerifiedDoubleReference: Use a constant class reference for verified doubles. String references are not verifying unless the class is loaded.", 2732381477],
+    [637, 9, 57, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [638].", 2238970195],
+    [638, 9, 90, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [637].", 1986493857]
+  ],
+  "spec/markly/merge/file_analysis_spec.rb:1044837920": [
+    [363, 13, 14, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 715729317],
+    [376, 13, 17, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 2710454185],
+    [393, 13, 18, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 257739398],
+    [413, 3, 1795, "RSpec/RepeatedExampleGroupDescription: Repeated describe block description on line(s) [629]", 348921369],
+    [629, 3, 1817, "RSpec/RepeatedExampleGroupDescription: Repeated describe block description on line(s) [413]", 4098148503],
+    [1211, 9, 62, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [1212, 1213, 1214].", 349962242],
+    [1212, 9, 88, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [1211, 1213, 1214].", 3099654427],
+    [1213, 9, 59, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [1211, 1212, 1214].", 203291841],
+    [1214, 9, 56, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [1211, 1212, 1213].", 1879756301],
+    [1232, 9, 77, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [1233].", 1084062099],
+    [1233, 9, 89, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [1232].", 1289232992],
+    [1243, 9, 66, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [1244].", 3045816639],
+    [1244, 9, 64, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [1243].", 4044514286]
+  ],
+  "spec/markly/merge/freeze_node_spec.rb:776230294": [
+    [96, 16, 30, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 3600450338],
+    [101, 16, 32, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 2327102009],
+    [109, 16, 30, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 3600450338],
+    [110, 16, 32, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 2327102009],
+    [115, 16, 26, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 3103757813],
+    [116, 16, 28, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 1736334830],
+    [117, 16, 30, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 3600450338],
+    [122, 16, 26, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 2009558550],
+    [123, 16, 26, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 1174592096],
+    [411, 14, 30, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 896214194],
+    [427, 5, 311, "RSpec/RepeatedExample: Don't repeat examples within an example group. Repeated on line(s) 449.", 4198284258],
+    [449, 5, 316, "RSpec/RepeatedExample: Don't repeat examples within an example group. Repeated on line(s) 427.", 4183356831],
+    [513, 14, 21, "RSpec/ExpectActual: Provide the actual value you are testing to `expect(...)`.", 2695994871]
+  ],
+  "spec/markly/merge/smart_merger_spec.rb:3524793367": [
+    [405, 13, 12, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 1388757216],
+    [871, 15, 64, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 2949871007],
+    [901, 15, 61, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 2310349680],
+    [942, 15, 66, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 2463833010],
+    [980, 15, 63, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 2061871801],
+    [1024, 15, 56, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 3931664706],
+    [1067, 15, 53, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 791928333],
+    [1115, 15, 78, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 3680529012],
+    [1156, 15, 75, "RSpec/ContextWording: Context description should match /^when\\b/, /^with\\b/, or /^without\\b/.", 1845954687]
+  ],
+  "spec/markly/merge/table_match_algorithm_spec.rb:2911511447": [
+    [963, 9, 59, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [964].", 1537413753],
+    [964, 9, 55, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [963].", 3849094593],
+    [983, 9, 59, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [984].", 1537413753],
+    [984, 9, 55, "RSpec/ReceiveMessages: Use `receive_messages` instead of multiple stubs on lines [983].", 3849094593]
+  ],
+  "spec/markly/merge/table_match_refiner_spec.rb:1077707265": [
+    [208, 11, 57, "Style/ClassMethodsDefinitions: Use `class << self` to define a class method.", 3520685818]
+  ],
+  "spec/markly/version_spec.rb:1523500907": [
+    [3, 1, 37, "RSpec/SpecFilePathFormat: Spec path should end with `markly/merge/version*_spec.rb`.", 4024476211]
+  ]
+}
