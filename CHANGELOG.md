@@ -20,6 +20,8 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+- Initial release
+
 ### Changed
 
 ### Deprecated
@@ -30,6 +32,6 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Security
 
-## [0.1.0] - 2025-12-08
-
-- Initial release
+[Unreleased]: https://github.com/kettle-rb/markly-merge/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/kettle-rb/markly-merge/compare/3dcd8b855b8a773f175ff34d31e3885a28a3e70b...v1.0.0
+[1.0.0t]: https://github.com/kettle-rb/markly-merge/tags/v1.0.0
