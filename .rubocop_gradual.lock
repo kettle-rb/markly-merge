@@ -1,5 +1,5 @@
 {
-  "README.md:93800715": [
+  "README.md:126761956": [
     [318, 15, 1, "Lint/Syntax: unterminated string meets end of file\n(Using Ruby 3.2 parser; configure using `TargetRubyVersion` parameter, under `AllCops`)", 177561]
   ],
   "spec/markly/merge/branch_coverage_spec.rb:1610524572": [
