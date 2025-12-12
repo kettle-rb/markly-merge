@@ -1,6 +1,106 @@
 module Markly
   module Merge
     VERSION: String
-    # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+
+    # Base error class for Markly::Merge
+    class Error < Markdown::Merge::Error
+    end
+
+    # Raised when a Markdown file has parsing errors
+    class ParseError < Markdown::Merge::ParseError
+      def initialize: (?String? message, ?content: String?, ?errors: Array[untyped]) -> void
+    end
+
+    # Raised when the template file has syntax errors
+    class TemplateParseError < ParseError
+    end
+
+    # Raised when the destination file has syntax errors
+    class DestinationParseError < ParseError
+    end
+
+    # Re-exported shared classes from markdown-merge
+    FileAligner: singleton(Markdown::Merge::FileAligner)
+    ConflictResolver: singleton(Markdown::Merge::ConflictResolver)
+    MergeResult: singleton(Markdown::Merge::MergeResult)
+    TableMatchAlgorithm: singleton(Markdown::Merge::TableMatchAlgorithm)
+    TableMatchRefiner: singleton(Markdown::Merge::TableMatchRefiner)
+    CodeBlockMerger: singleton(Markdown::Merge::CodeBlockMerger)
+
+    # Debug logging utility for Markly::Merge
+    module DebugLogger
+      extend Ast::Merge::DebugLogger
+
+      def self.env_var_name: () -> String
+      def self.env_var_name=: (String name) -> String
+      def self.log_prefix: () -> String
+      def self.log_prefix=: (String prefix) -> String
+      def self.enabled?: () -> bool
+      def self.debug: (*untyped args) -> void
+      def self.info: (*untyped args) -> void
+      def self.warning: (*untyped args) -> void
+      def self.time: [T] (String label) { () -> T } -> T
+      def self.log_node: (untyped node, ?label: String) -> void
+    end
+
+    # Represents a frozen block of Markdown content
+    class FreezeNode < Ast::Merge::FreezeNodeBase
+      def initialize: (
+        start_line: Integer,
+        end_line: Integer,
+        content: String,
+        start_marker: String,
+        end_marker: String,
+        ?nodes: Array[untyped],
+        ?reason: String?
+      ) -> void
+
+      def signature: () -> Array[Symbol | String]
+      def full_text: () -> String
+      def line_count: () -> Integer
+      def contains_type?: (Symbol type_symbol) -> bool
+      def inspect: () -> String
+    end
+
+    # File analysis for Markdown files using Markly
+    class FileAnalysis < Markdown::Merge::FileAnalysisBase
+      DEFAULT_FREEZE_TOKEN: String
+
+      def initialize: (
+        String source,
+        ?freeze_token: String,
+        ?signature_generator: (^(untyped) -> (Array[untyped] | untyped | nil))?,
+        ?flags: Integer,
+        ?extensions: Array[Symbol]
+      ) -> void
+
+      def parse_document: (String source) -> untyped
+      def next_sibling: (untyped node) -> untyped?
+      def freeze_node_class: () -> Class
+      def parser_node?: (untyped value) -> bool
+      def fallthrough_node?: (untyped value) -> bool
+      def compute_parser_signature: (untyped node) -> Array[untyped]?
+    end
+
+    # Orchestrates the smart merge process for Markdown files using Markly
+    class SmartMerger < Markdown::Merge::SmartMergerBase
+      def initialize: (
+        String template_content,
+        String dest_content,
+        ?signature_generator: (^(untyped) -> (Array[untyped] | untyped | nil))?,
+        ?preference: Symbol,
+        ?add_template_only_nodes: bool,
+        ?inner_merge_code_blocks: (bool | Markdown::Merge::CodeBlockMerger),
+        ?freeze_token: String,
+        ?match_refiner: (^(Array[untyped], Array[untyped], Hash[Symbol, untyped]) -> Array[Markdown::Merge::MatchResult])?,
+        ?flags: Integer,
+        ?extensions: Array[Symbol]
+      ) -> void
+
+      def create_file_analysis: (String content, **untyped options) -> FileAnalysis
+      def node_to_source: (untyped node, FileAnalysis analysis) -> String
+      def template_parse_error_class: () -> Class
+      def destination_parse_error_class: () -> Class
+    end
   end
 end
