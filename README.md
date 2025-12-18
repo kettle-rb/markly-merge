@@ -54,24 +54,31 @@
 
 ## 🌻 Synopsis
 
-Markly::Merge is a standalone Ruby module that intelligently merges two versions of a Markdown file using Markly (libcmark-gfm) AST analysis. It's like a smart "git merge" specifically designed for Markdown documentation files. Built on top of [ast-merge](https://github.com/kettle-rb/ast-merge), it shares the same architecture as [prism-merge](https://github.com/kettle-rb/prism-merge) for Ruby source files.
+`markly-merge` is a thin wrapper around [markdown-merge](https://github.com/kettle-rb/markdown-merge) that provides:
+
+- **Hard dependency on Markly** - Ensures the libcmark-gfm (C) parser is installed
+- **Markly-specific defaults** - Freeze token: `"markly-merge"`, `inner_merge_code_blocks: true`
+- **Markly parse options** - Pass `flags:` and `extensions:` parameters
 
 For an alternative using Comrak (Rust), see [commonmarker-merge](https://github.com/kettle-rb/commonmarker-merge).
 
-### Key Features
+### Features (via markdown-merge)
 
 - **Markly-Powered**: Uses libcmark-gfm for accurate CommonMark + GFM parsing
 - **Structure-Aware**: Understands headings, lists, code blocks, tables, and more
 - **Intelligent**: Matches sections by heading structure and content signatures
 - **Comment-Preserving**: HTML comments are preserved in context
 - **Freeze Block Support**: Respects freeze markers (default: `markly-merge:freeze` / `markly-merge:unfreeze`) for merge control - customizable to match your project's conventions
+- **Type Normalization**: Canonical node types work across all markdown backends
 - **Full Provenance**: Tracks origin of every node
-- **Standalone**: Minimal dependencies - just `markly` and `ast-merge`
+- **Inner-Merge Code Blocks**: Enabled by default - merges fenced code blocks using language-specific mergers
 - **Customizable**:
   - `signature_generator` - callable custom signature generators
   - `preference` - setting of `:template`, `:destination`, or a Hash for per-node-type preferences
   - `add_template_only_nodes` - setting to retain sections that do not exist in destination
   - `freeze_token` - customize freeze block markers (default: `"markly-merge"`)
+  - `flags` - Markly parse flags (e.g., `Markly::FOOTNOTES`, `Markly::SMART`)
+  - `extensions` - GFM extensions (`:table`, `:strikethrough`, `:autolink`, `:tagfilter`, `:tasklist`)
 
 ### Supported Node Types
 

@@ -544,8 +544,9 @@ RSpec.describe Markly::Merge::FileAligner do
 
         # Should only have one match for the heading
         matches = alignment.select { |e| e[:type] == :match }
+        # Use merge_type (canonical type from NodeTypeNormalizer) for portable type checking
         heading_matches = matches.select do |m|
-          m[:template_node].respond_to?(:type) && m[:template_node].type == :header
+          m[:template_node].respond_to?(:merge_type) && m[:template_node].merge_type == :heading
         end
         expect(heading_matches.size).to eq(1)
       end

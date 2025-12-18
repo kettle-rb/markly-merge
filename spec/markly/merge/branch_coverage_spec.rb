@@ -22,8 +22,8 @@ RSpec.describe "Branch Coverage" do
         it "generates table signature based on row count" do
           # Parse with table extension enabled
           analysis = described_class.new(source)
-          # Find the table node
-          table_statement = analysis.statements.find { |s| s.respond_to?(:type) && s.type == :table }
+          # Find the table node using merge_type for portable type checking
+          table_statement = analysis.statements.find { |s| s.respond_to?(:merge_type) && s.merge_type == :table }
 
           if table_statement
             # Get signature for table - covers line 125
@@ -54,7 +54,7 @@ RSpec.describe "Branch Coverage" do
           expect(analysis.valid?).to be true
 
           # Look for footnote definition node - covers line 125 footnote branch
-          footnote = analysis.statements.find { |s| s.respond_to?(:type) && s.type == :footnote_definition }
+          footnote = analysis.statements.find { |s| s.respond_to?(:merge_type) && s.merge_type == :footnote_definition }
           if footnote
             idx = analysis.statements.index(footnote)
             sig = analysis.signature_at(idx)
@@ -83,7 +83,7 @@ RSpec.describe "Branch Coverage" do
 
         it "extracts content from list nodes" do
           analysis = described_class.new(source)
-          list_node = analysis.statements.find { |s| s.respond_to?(:type) && s.type == :list }
+          list_node = analysis.statements.find { |s| s.respond_to?(:merge_type) && s.merge_type == :list }
           expect(list_node).not_to be_nil
 
           # Getting signature should use extract_text_content for list
@@ -94,13 +94,13 @@ RSpec.describe "Branch Coverage" do
 
         it "extracts content from block quotes" do
           analysis = described_class.new(source)
-          # Markly uses :blockquote instead of :block_quote
-          quote_node = analysis.statements.find { |s| s.respond_to?(:type) && s.type == :blockquote }
+          # Use merge_type for portable type checking (canonical :block_quote)
+          quote_node = analysis.statements.find { |s| s.respond_to?(:merge_type) && s.merge_type == :block_quote }
           expect(quote_node).not_to be_nil
 
           idx = analysis.statements.index(quote_node)
           sig = analysis.signature_at(idx)
-          expect(sig.first).to eq(:blockquote)
+          expect(sig.first).to eq(:block_quote)
         end
       end
     end
@@ -283,7 +283,8 @@ RSpec.describe "Branch Coverage" do
           analysis = described_class.new(source)
           expect(analysis.valid?).to be true
           # The inside heading and paragraph should be skipped - covers line 340
-          analysis.statements.select { |s| s.respond_to?(:type) && s.type == :header }
+          # Use merge_type for portable type checking (canonical :heading)
+          analysis.statements.select { |s| s.respond_to?(:merge_type) && s.merge_type == :heading }
           # Only outside headings should be in statements (not the frozen one)
         end
       end
