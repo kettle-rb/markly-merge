@@ -8,7 +8,7 @@
 require "bundler/inline"
 
 gemfile do
-  source "https://rubygems.org"
+  source "https://gem.coop"
   gem "benchmark"
   gem "tree_haver", path: File.expand_path(File.join("..", "..", "tree_haver"), __dir__)
   gem "markdown-merge", path: File.expand_path(File.join("..", "..", "markdown-merge"), __dir__)
