@@ -257,8 +257,8 @@ RSpec.describe Markly::Merge::FileAnalysis do
     it "returns signature for heading" do
       sig = analysis.signature_at(0)
       expect(sig).to be_an(Array)
-      # Markly uses :header instead of :heading
-      expect(sig.first).to eq(:header)
+      # Signatures use canonical type :heading (normalized from Markly's :header)
+      expect(sig.first).to eq(:heading)
     end
 
     it "returns signature for paragraph" do
@@ -334,19 +334,20 @@ RSpec.describe Markly::Merge::FileAnalysis do
     end
 
     it "uses custom generator when provided" do
-      # Markly uses :header instead of :heading
+      # Custom generator receives the wrapped node, which has merge_type
       custom_generator = ->(node) { [:custom, node.type.to_s] }
       analysis = described_class.new(source, signature_generator: custom_generator)
 
-      expect(analysis.signature_at(0)).to eq([:custom, "header"])
+      # The raw type from tree_haver is "heading" (normalized from Markly's :header)
+      expect(analysis.signature_at(0)).to eq([:custom, "heading"])
     end
 
     it "falls through when generator returns node" do
       custom_generator = ->(node) { node }
       analysis = described_class.new(source, signature_generator: custom_generator)
 
-      # Should use default signature computation
-      expect(analysis.signature_at(0).first).to eq(:header)
+      # Should use default signature computation with canonical type :heading
+      expect(analysis.signature_at(0).first).to eq(:heading)
     end
 
     it "returns nil when generator returns nil" do
@@ -366,8 +367,8 @@ RSpec.describe Markly::Merge::FileAnalysis do
 
       it "includes heading type, level, and text" do
         sig = analysis.signature_at(0)
-        # Markly uses :header instead of :heading
-        expect(sig).to include(:header)
+        # Signatures use canonical type :heading (normalized from Markly's :header)
+        expect(sig).to include(:heading)
         expect(sig).to include(1) # heading level
         expect(sig).to include("Level 1") # heading text
       end
@@ -540,8 +541,8 @@ RSpec.describe Markly::Merge::FileAnalysis do
         analysis = described_class.new(source)
         stmt = analysis.statements.first
         sig = analysis.generate_signature(stmt)
-        # Markly uses :blockquote instead of :block_quote
-        expect(sig[0]).to eq(:blockquote)
+        # Signatures use canonical type :block_quote (normalized from Markly's :blockquote)
+        expect(sig[0]).to eq(:block_quote)
       end
     end
 
@@ -559,10 +560,11 @@ RSpec.describe Markly::Merge::FileAnalysis do
       it "generates signature for thematic break" do
         analysis = described_class.new(source)
         # Markly uses :hrule instead of :thematic_break
-        thematic = analysis.statements.find { |s| s.type == :hrule }
+        # Use merge_type for portable type checking
+        thematic = analysis.statements.find { |s| s.respond_to?(:merge_type) && s.merge_type == :thematic_break }
         expect(thematic).not_to be_nil
         sig = analysis.generate_signature(thematic)
-        expect(sig).to eq([:hrule])
+        expect(sig).to eq([:thematic_break])
       end
     end
 
@@ -579,8 +581,8 @@ RSpec.describe Markly::Merge::FileAnalysis do
         analysis = described_class.new(source)
         stmt = analysis.statements.first
         sig = analysis.generate_signature(stmt)
-        # Markly uses :html instead of :html_block
-        expect(sig[0]).to eq(:html)
+        # Signatures use canonical type :html_block (normalized from Markly's :html)
+        expect(sig[0]).to eq(:html_block)
       end
     end
 
@@ -764,8 +766,9 @@ RSpec.describe Markly::Merge::FileAnalysis do
         analysis = described_class.new(source)
         stmt = analysis.statements.first
         # Headings don't have a name method
+        # Signatures use canonical type :heading (normalized from Markly's :header)
         sig = analysis.generate_signature(stmt)
-        expect(sig[0]).to eq(:header)
+        expect(sig[0]).to eq(:heading)
       end
     end
   end
@@ -949,12 +952,12 @@ RSpec.describe Markly::Merge::FileAnalysis do
         analysis = described_class.new(source)
 
         # Verify no footnote_definition nodes exist without the flag
-        footnote_nodes = analysis.statements.select { |s| s.respond_to?(:type) && s.type == :footnote_definition }
+        footnote_nodes = analysis.statements.select { |s| s.respond_to?(:type) && s.type.to_s == "footnote_definition" }
         expect(footnote_nodes).to be_empty
 
         # The [^1]: syntax is parsed as a paragraph, not a footnote definition
         paragraph_with_footnote_ref = analysis.statements.find do |s|
-          s.respond_to?(:type) && s.type == :paragraph
+          s.respond_to?(:type) && s.type.to_s == "paragraph"
         end
         expect(paragraph_with_footnote_ref).not_to be_nil
       end
@@ -972,17 +975,19 @@ RSpec.describe Markly::Merge::FileAnalysis do
       end
 
       it "parses footnote_definition nodes when FOOTNOTES flag is set" do
+        # Note: Markly footnotes are enabled via the FOOTNOTES flag, not an extension
         analysis = described_class.new(source, flags: Markly::FOOTNOTES)
 
         # With the FOOTNOTES flag, footnote definitions are parsed correctly
-        footnote_nodes = analysis.statements.select { |s| s.respond_to?(:type) && s.type == :footnote_definition }
+        footnote_nodes = analysis.statements.select { |s| s.respond_to?(:type) && s.type.to_s == "footnote_definition" }
         expect(footnote_nodes.size).to eq(1)
       end
 
       it "computes correct signature for footnote_definition" do
+        # Note: Markly footnotes are enabled via the FOOTNOTES flag, not an extension
         analysis = described_class.new(source, flags: Markly::FOOTNOTES)
 
-        footnote_node = analysis.statements.find { |s| s.respond_to?(:type) && s.type == :footnote_definition }
+        footnote_node = analysis.statements.find { |s| s.respond_to?(:type) && s.type.to_s == "footnote_definition" }
         sig = analysis.generate_signature(footnote_node)
 
         expect(sig.first).to eq(:footnote_definition)
@@ -1212,7 +1217,7 @@ RSpec.describe Markly::Merge::FileAnalysis do
         allow(custom_node).to receive(:source_position).and_return({start_line: 1, end_line: 1})
         allow(custom_node).to receive(:first_child).and_return(nil)
         allow(custom_node).to receive(:each).and_return([].each)
-        allow(custom_node).to receive(:walk).and_yield(custom_node)
+        allow(custom_node).to receive(:children).and_return([])
 
         # Access the private method for testing
         sig = analysis.send(:compute_parser_signature, custom_node)
@@ -1256,10 +1261,12 @@ RSpec.describe Markly::Merge::FileAnalysis do
       analysis = described_class.new(source)
 
       # Create a mock node that raises TypeError on string_content
-      # and properly supports walk for the fallback
+      # and properly supports all methods needed for the fallback
       problematic_node = double("Markly::Node")
       allow(problematic_node).to receive(:string_content).and_raise(TypeError.new("wrong argument type"))
-      allow(problematic_node).to receive(:walk) # walk yields nothing, returns empty text
+      allow(problematic_node).to receive(:text).and_raise(TypeError.new("wrong argument type"))
+      allow(problematic_node).to receive(:type).and_return(:paragraph)
+      allow(problematic_node).to receive(:children).and_return([])
 
       result = analysis.send(:safe_string_content, problematic_node)
       expect(result).to eq("") # Falls back to extract_text_content which returns empty for no children
@@ -1278,33 +1285,6 @@ RSpec.describe Markly::Merge::FileAnalysis do
 
       result = analysis.send(:extract_table_header_content, empty_table)
       expect(result).to eq("")
-    end
-  end
-
-  describe "#node_name edge cases" do
-    let(:source) { "# Test" }
-
-    it "returns nil when node does not respond to name" do
-      analysis = described_class.new(source)
-
-      # Use a simple double that we can control respond_to? for
-      node = double("Markly::Node")
-      allow(node).to receive(:respond_to?).with(:name).and_return(false)
-
-      result = analysis.send(:node_name, node)
-      expect(result).to be_nil
-    end
-
-    it "returns name when node responds to name" do
-      analysis = described_class.new(source)
-
-      # Use a simple double to test the name retrieval path
-      node = double("Markly::Node")
-      allow(node).to receive(:respond_to?).with(:name).and_return(true)
-      allow(node).to receive(:name).and_return("test_name")
-
-      result = analysis.send(:node_name, node)
-      expect(result).to eq("test_name")
     end
   end
 end

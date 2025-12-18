@@ -4,17 +4,10 @@ module Markly
   module Merge
     # Orchestrates the smart merge process for Markdown files using Markly.
     #
-    # Extends Markdown::Merge::SmartMergerBase with Markly-specific parsing.
-    #
-    # Uses FileAnalysis, FileAligner, ConflictResolver, and MergeResult to
-    # merge two Markdown files intelligently. Freeze blocks marked with
-    # HTML comments are preserved exactly as-is.
-    #
-    # SmartMerger provides flexible configuration for different merge scenarios:
-    # - Preserve destination customizations (default)
-    # - Apply template updates
-    # - Add new sections from template
-    # - Inner-merge fenced code blocks using language-specific mergers (default: enabled)
+    # This is a thin wrapper around Markdown::Merge::SmartMerger that:
+    # - Forces the :markly backend
+    # - Sets markly-specific defaults (freeze token, inner_merge_code_blocks)
+    # - Exposes markly-specific options (flags, extensions)
     #
     # @example Basic merge (destination customizations preserved)
     #   merger = SmartMerger.new(template_content, dest_content)
@@ -34,8 +27,9 @@ module Markly
     #
     # @example Custom signature matching
     #   sig_gen = ->(node) {
-    #     if node.respond_to?(:type) && node.type == :header
-    #       [:header, node.header_level]  # Match by level only, not content
+    #     canonical_type = Ast::Merge::NodeTyping.merge_type_for(node) || node.type
+    #     if canonical_type == :heading
+    #       [:heading, node.header_level]  # Match by level only, not content
     #     else
     #       node  # Fall through to default
     #     end
@@ -53,16 +47,15 @@ module Markly
     #     inner_merge_code_blocks: false
     #   )
     #
-    # @see FileAnalysis
-    # @see Markdown::Merge::SmartMergerBase
-    class SmartMerger < Markdown::Merge::SmartMergerBase
+    # @see Markdown::Merge::SmartMerger Underlying implementation
+    class SmartMerger < Markdown::Merge::SmartMerger
       # Creates a new SmartMerger for intelligent Markdown file merging.
       #
       # @param template_content [String] Template Markdown source code
       # @param dest_content [String] Destination Markdown source code
       #
       # @param signature_generator [Proc, nil] Optional proc to generate custom node signatures.
-      #   The proc receives a Markly::Node and should return one of:
+      #   The proc receives a node (wrapped with canonical merge_type) and should return one of:
       #   - An array representing the node's signature
       #   - `nil` to indicate the node should have no signature
       #   - The original node to fall through to default signature computation
@@ -79,7 +72,7 @@ module Markly
       #
       # @param inner_merge_code_blocks [Boolean, CodeBlockMerger] Controls inner-merge for
       #   fenced code blocks:
-      #   - `true` (default) - Enable inner-merge using default CodeBlockMerger
+      #   - `true` (default for markly-merge) - Enable inner-merge using default CodeBlockMerger
       #   - `false` - Disable inner-merge (use standard conflict resolution)
       #   - `CodeBlockMerger` instance - Use custom CodeBlockMerger
       #
@@ -89,20 +82,12 @@ module Markly
       #
       # @param flags [Integer] Markly parse flags (e.g., Markly::FOOTNOTES | Markly::SMART).
       #   Default: Markly::DEFAULT
-      #   Available flags:
-      #   - Markly::FOOTNOTES - Parse footnotes
-      #   - Markly::SMART - Use smart punctuation (curly quotes, etc.)
-      #   - Markly::VALIDATE_UTF8 - Replace illegal sequences with replacement character
-      #   - Markly::LIBERAL_HTML_TAG - Support liberal parsing of inline HTML tags
-      #   - Markly::STRIKETHROUGH_DOUBLE_TILDE - Require double tildes for strikethrough
-      #   - Markly::UNSAFE - Allow raw/custom HTML and unsafe links
       #
       # @param extensions [Array<Symbol>] Markly extensions to enable (e.g., [:table, :strikethrough])
       #   Available extensions: :table, :strikethrough, :autolink, :tagfilter, :tasklist
       #
       # @param match_refiner [#call, nil] Optional match refiner for fuzzy matching of
       #   unmatched nodes. Default: nil (fuzzy matching disabled).
-      #   Set to TableMatchRefiner.new to enable fuzzy table matching.
       #
       # @raise [TemplateParseError] If template has syntax errors
       # @raise [DestinationParseError] If destination has syntax errors
@@ -112,17 +97,16 @@ module Markly
         signature_generator: nil,
         preference: :destination,
         add_template_only_nodes: false,
-        inner_merge_code_blocks: true,
-        freeze_token: FileAnalysis::DEFAULT_FREEZE_TOKEN,
+        inner_merge_code_blocks: DEFAULT_INNER_MERGE_CODE_BLOCKS,
+        freeze_token: DEFAULT_FREEZE_TOKEN,
         flags: ::Markly::DEFAULT,
         extensions: [:table],
         match_refiner: nil
       )
-        @flags = flags
-        @extensions = extensions
         super(
           template_content,
           dest_content,
+          backend: :markly,
           signature_generator: signature_generator,
           preference: preference,
           add_template_only_nodes: add_template_only_nodes,
@@ -131,21 +115,6 @@ module Markly
           match_refiner: match_refiner,
           flags: flags,
           extensions: extensions,
-        )
-      end
-
-      # Create a FileAnalysis instance for Markly parsing.
-      #
-      # @param content [String] Markdown content to analyze
-      # @param options [Hash] Analysis options
-      # @return [FileAnalysis] Markly-specific file analysis
-      def create_file_analysis(content, **opts)
-        FileAnalysis.new(
-          content,
-          freeze_token: opts[:freeze_token],
-          signature_generator: opts[:signature_generator],
-          flags: opts[:flags] || @flags,
-          extensions: opts[:extensions] || @extensions,
         )
       end
 
@@ -163,24 +132,19 @@ module Markly
         DestinationParseError
       end
 
-      # Convert a node to its source text.
+      # Create a FileAnalysis instance for parsing.
       #
-      # @param node [Object] Node to convert
-      # @param analysis [FileAnalysis] Analysis for source lookup
-      # @return [String] Source text
-      def node_to_source(node, analysis)
-        # Check for any FreezeNode type (base class or subclass)
-        if node.is_a?(Ast::Merge::FreezeNodeBase)
-          node.full_text
-        else
-          pos = node.source_position
-          start_line = pos&.dig(:start_line)
-          end_line = pos&.dig(:end_line)
-
-          return node.to_commonmark unless start_line && end_line
-
-          analysis.source_range(start_line, end_line)
-        end
+      # @param content [String] Markdown content to analyze
+      # @param options [Hash] Analysis options
+      # @return [Markly::Merge::FileAnalysis] File analysis instance
+      def create_file_analysis(content, **opts)
+        FileAnalysis.new(
+          content,
+          freeze_token: opts[:freeze_token],
+          signature_generator: opts[:signature_generator],
+          flags: opts[:flags] || ::Markly::DEFAULT,
+          extensions: opts[:extensions] || [:table],
+        )
       end
     end
   end

@@ -60,11 +60,11 @@ RSpec.describe Markly::Merge::TableMatchRefiner do
     let(:dest_analysis) { Markly::Merge::FileAnalysis.new(dest_md) }
 
     let(:template_tables) do
-      template_analysis.statements.select { |n| n.respond_to?(:type) && n.type == :table }
+      template_analysis.statements.select { |n| n.respond_to?(:merge_type) && n.merge_type == :table }
     end
 
     let(:dest_tables) do
-      dest_analysis.statements.select { |n| n.respond_to?(:type) && n.type == :table }
+      dest_analysis.statements.select { |n| n.respond_to?(:merge_type) && n.merge_type == :table }
     end
 
     it "matches tables with similar headers" do
@@ -153,11 +153,11 @@ RSpec.describe Markly::Merge::TableMatchRefiner do
     let(:dest_analysis) { Markly::Merge::FileAnalysis.new(dest_md) }
 
     let(:template_tables) do
-      template_analysis.statements.select { |n| n.respond_to?(:type) && n.type == :table }
+      template_analysis.statements.select { |n| n.respond_to?(:merge_type) && n.merge_type == :table }
     end
 
     let(:dest_tables) do
-      dest_analysis.statements.select { |n| n.respond_to?(:type) && n.type == :table }
+      dest_analysis.statements.select { |n| n.respond_to?(:merge_type) && n.merge_type == :table }
     end
 
     it "ensures each destination table is matched at most once" do
@@ -189,8 +189,8 @@ RSpec.describe Markly::Merge::TableMatchRefiner do
     let(:template_analysis) { Markly::Merge::FileAnalysis.new(template_md) }
 
     it "identifies table nodes correctly" do
-      table_nodes = template_analysis.statements.select { |n| n.respond_to?(:type) && n.type == :table }
-      non_table_nodes = template_analysis.statements.reject { |n| n.respond_to?(:type) && n.type == :table }
+      table_nodes = template_analysis.statements.select { |n| n.respond_to?(:merge_type) && n.merge_type == :table }
+      non_table_nodes = template_analysis.statements.reject { |n| n.respond_to?(:merge_type) && n.merge_type == :table }
 
       table_nodes.each do |node|
         expect(refiner.send(:table_node?, node)).to be true

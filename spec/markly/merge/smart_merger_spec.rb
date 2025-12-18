@@ -125,9 +125,10 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "parses footnotes when flag is enabled" do
+        # Note: Markly footnotes are enabled via the FOOTNOTES flag, not an extension
         merger = described_class.new(template, destination, flags: Markly::FOOTNOTES)
-        expect(merger.template_analysis.statements.any? { |s| s.respond_to?(:type) && s.type == :footnote_definition }).to be true
-        expect(merger.dest_analysis.statements.any? { |s| s.respond_to?(:type) && s.type == :footnote_definition }).to be true
+        expect(merger.template_analysis.statements.any? { |s| s.respond_to?(:type) && s.type.to_s == "footnote_definition" }).to be true
+        expect(merger.dest_analysis.statements.any? { |s| s.respond_to?(:type) && s.type.to_s == "footnote_definition" }).to be true
       end
 
       it "merges footnotes by label" do
