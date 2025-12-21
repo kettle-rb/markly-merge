@@ -89,6 +89,9 @@ module Markly
       # @param match_refiner [#call, nil] Optional match refiner for fuzzy matching of
       #   unmatched nodes. Default: nil (fuzzy matching disabled).
       #
+      # @param node_typing [Hash{Symbol,String => #call}, nil] Node typing configuration
+      #   for per-node-type merge preferences.
+      #
       # @raise [TemplateParseError] If template has syntax errors
       # @raise [DestinationParseError] If destination has syntax errors
       def initialize(
@@ -101,7 +104,8 @@ module Markly
         freeze_token: DEFAULT_FREEZE_TOKEN,
         flags: ::Markly::DEFAULT,
         extensions: [:table],
-        match_refiner: nil
+        match_refiner: nil,
+        node_typing: nil
       )
         super(
           template_content,
@@ -113,6 +117,7 @@ module Markly
           inner_merge_code_blocks: inner_merge_code_blocks,
           freeze_token: freeze_token,
           match_refiner: match_refiner,
+          node_typing: node_typing,
           flags: flags,
           extensions: extensions,
         )
