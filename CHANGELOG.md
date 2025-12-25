@@ -22,6 +22,10 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Changed
 
+- **SmartMerger**: Added `**options` for forward compatibility
+  - Accepts additional options that may be added to base class in future
+  - Passes all options through to `Markdown::Merge::SmartMerger`
+
 ### Deprecated
 
 ### Removed
