@@ -49,4 +49,3 @@ RSpec.configure do |config|
 end
 
 warn "✓ FFI-only test mode: MRI backend is NOT loaded"
-

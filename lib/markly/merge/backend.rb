@@ -20,8 +20,8 @@ module Markly
     #   root = tree.root_node
     #   puts root.type  # => "document"
     module Backend
-      @load_attempted = false
-      @loaded = false
+      @load_attempted = false # rubocop:disable ThreadSafety/ClassInstanceVariable
+      @loaded = false # rubocop:disable ThreadSafety/ClassInstanceVariable
 
       # Check if the Markly backend is available
       #
@@ -46,8 +46,8 @@ module Markly
         # @return [void]
         # @api private
         def reset!
-          @load_attempted = false
-          @loaded = false
+          @load_attempted = false # rubocop:disable ThreadSafety/ClassInstanceVariable
+          @loaded = false # rubocop:disable ThreadSafety/ClassInstanceVariable
         end
 
         # Get capabilities supported by this backend
@@ -101,8 +101,8 @@ module Markly
 
           unless @name == :markdown
             raise TreeHaver::NotAvailable,
-                  "Markly backend only supports Markdown parsing. " \
-                    "Got language: #{name.inspect}"
+              "Markly backend only supports Markdown parsing. " \
+                "Got language: #{name.inspect}"
           end
         end
 
@@ -161,11 +161,11 @@ module Markly
               @language = Language.markdown
             else
               raise ArgumentError,
-                    "Markly backend only supports Markdown parsing. Got: #{lang.inspect}"
+                "Markly backend only supports Markdown parsing. Got: #{lang.inspect}"
             end
           else
             raise ArgumentError,
-                  "Expected Backend::Language or :markdown, got #{lang.class}"
+              "Expected Backend::Language or :markdown, got #{lang.class}"
           end
         end
 
@@ -254,7 +254,11 @@ module Markly
           end
 
           if inner_node.respond_to?(:to_plaintext)
-            inner_node.to_plaintext rescue children.map(&:text).join
+            begin
+              inner_node.to_plaintext
+            rescue
+              children.map(&:text).join
+            end
           else
             children.map(&:text).join
           end
@@ -265,10 +269,18 @@ module Markly
         # @return [Array<Node>] Child nodes
         def children
           result = []
-          child = inner_node.first_child rescue nil
+          child = begin
+            inner_node.first_child
+          rescue
+            nil
+          end
           while child
             result << Node.new(child, source: source, lines: lines)
-            child = child.next rescue nil
+            child = begin
+              child.next
+            rescue
+              nil
+            end
           end
           result
         end
@@ -318,46 +330,70 @@ module Markly
         # @return [Integer, nil]
         def header_level
           return unless raw_type == "header"
-          inner_node.header_level rescue nil
+          begin
+            inner_node.header_level
+          rescue
+            nil
+          end
         end
 
         # Get fence info for code blocks
         # @return [String, nil]
         def fence_info
           return unless type == "code_block"
-          inner_node.fence_info rescue nil
+          begin
+            inner_node.fence_info
+          rescue
+            nil
+          end
         end
 
         # Get URL for links/images
         # @return [String, nil]
         def url
-          inner_node.url rescue nil
+          inner_node.url
+        rescue
+          nil
         end
 
         # Get title for links/images
         # @return [String, nil]
         def title
-          inner_node.title rescue nil
+          inner_node.title
+        rescue
+          nil
         end
 
         # Get the next sibling (Markly uses .next)
         # @return [Node, nil]
         def next_sibling
-          sibling = inner_node.next rescue nil
+          sibling = begin
+            inner_node.next
+          rescue
+            nil
+          end
           sibling ? Node.new(sibling, source: source, lines: lines) : nil
         end
 
         # Get the previous sibling
         # @return [Node, nil]
         def prev_sibling
-          sibling = inner_node.previous rescue nil
+          sibling = begin
+            inner_node.previous
+          rescue
+            nil
+          end
           sibling ? Node.new(sibling, source: source, lines: lines) : nil
         end
 
         # Get the parent node
         # @return [Node, nil]
         def parent
-          p = inner_node.parent rescue nil
+          p = begin
+            inner_node.parent
+          rescue
+            nil
+          end
           p ? Node.new(p, source: source, lines: lines) : nil
         end
       end
@@ -370,7 +406,7 @@ module Markly
         :markdown,
         backend_type: :markly,
         backend_module: self,
-        gem_name: "markly"
+        gem_name: "markly",
       )
 
       # Register the full tag for RSpec dependency tags with require path
@@ -379,7 +415,7 @@ module Markly
         :markly_backend,
         category: :backend,
         backend_name: :markly,
-        require_path: "markly/merge"
+        require_path: "markly/merge",
       ) { available? }
     end
   end

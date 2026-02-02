@@ -170,4 +170,3 @@ RSpec.describe Markly::Merge::Backend do
     end
   end
 end
-
