@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe Markly::Merge::CodeBlockMerger do
   describe "#initialize" do
     it "creates a merger with default settings" do
@@ -126,7 +128,7 @@ RSpec.describe Markly::Merge::CodeBlockMerger do
       end
     end
 
-    context "with Ruby code blocks" do
+    context "with Ruby code blocks", :prism_merge do
       # Use method definitions which match by name, allowing preference to control content
       let(:template_node) do
         doc = Markly.parse("```ruby\ndef greet\n  puts 'hello'\nend\n```")
@@ -160,7 +162,7 @@ RSpec.describe Markly::Merge::CodeBlockMerger do
       end
     end
 
-    context "with method merging" do
+    context "with method merging", :prism_merge do
       let(:template_node) do
         code = <<~RUBY
           def hello
@@ -206,7 +208,7 @@ RSpec.describe Markly::Merge::CodeBlockMerger do
       end
     end
 
-    context "with parse errors" do
+    context "with parse errors", :prism_merge do
       let(:template_node) do
         doc = Markly.parse("```ruby\ndef broken(\n```")
         doc.first
@@ -220,9 +222,7 @@ RSpec.describe Markly::Merge::CodeBlockMerger do
     end
   end
 
-  describe ".merge_with_prism" do
-    before { require "prism/merge" }
-
+  describe ".merge_with_prism", :prism_merge do
     # Use method definitions which match by name, allowing preference to control content
     let(:template) { "def greet\n  puts 'hello'\nend" }
     let(:dest) { "def greet\n  puts 'world'\nend" }

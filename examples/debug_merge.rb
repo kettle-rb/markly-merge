@@ -116,17 +116,15 @@ if d_para.respond_to?(:node)
   real_node = inner.inner_node
   puts "\n  Real Markly::Node methods related to content:"
   methods = real_node.methods.grep(/to_|string|content|text|render|html|markdown|plaintext/)
-  puts "    #{methods.sort.join(', ')}"
+  puts "    #{methods.sort.join(", ")}"
 
   # Try each method
   puts "\n  Method output tests:"
   methods.sort.each do |meth|
-    begin
-      result = real_node.send(meth)
-      puts "    #{meth}: #{result.inspect[0..80]}"
-    rescue => e
-      puts "    #{meth}: ERROR - #{e.message}"
-    end
+    result = real_node.send(meth)
+    puts "    #{meth}: #{result.inspect[0..80]}"
+  rescue => e
+    puts "    #{meth}: ERROR - #{e.message}"
   end
 end
 puts
@@ -146,7 +144,7 @@ dest_analysis.statements.each_with_index do |stmt, idx|
     # Check all ways Markly might expose position
     puts "    real_node methods for position:"
     pos_methods = real_node.methods.grep(/line|column|position|source|start|end|range/)
-    puts "      #{pos_methods.sort.join(', ')}"
+    puts "      #{pos_methods.sort.join(", ")}"
 
     # Try source_position hash accessor
     if real_node.respond_to?(:source_position)
@@ -154,7 +152,11 @@ dest_analysis.statements.each_with_index do |stmt, idx|
     end
 
     # Try individual accessors
-    puts "    real_node.start_line via method_missing: #{real_node.start_line rescue 'N/A'}"
+    puts "    real_node.start_line via method_missing: #{begin
+      real_node.start_line
+    rescue
+      "N/A"
+    end}"
 
     # Check if it's a hash-like accessor
     begin
@@ -207,4 +209,3 @@ puts
 puts "=" * 70
 puts "Debug complete"
 puts "=" * 70
-

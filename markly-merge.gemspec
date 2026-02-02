@@ -82,10 +82,10 @@ Gem::Specification.new do |spec|
   spec.executables = []
 
   # Hard dependency on markly parser
-  spec.add_dependency("markly", "~> 0.15")                              # Markdown parsing and rendering
+  spec.add_dependency("markly", "~> 0.15", ">= 0.15.2")                 # Markdown parsing and rendering
 
   # Shared merge infrastructure (ast-merge and tree_haver are transitive via markdown-merge)
-  spec.add_dependency("markdown-merge", "~> 1.0")                       # ruby >= 3.2.0
+  spec.add_dependency("markdown-merge", "~> 1.0", ">= 1.0.2")           # ruby >= 3.2.0
 
   # Utilities
   spec.add_dependency("version_gem", "~> 1.1", ">= 1.1.9")              # ruby >= 2.2.0

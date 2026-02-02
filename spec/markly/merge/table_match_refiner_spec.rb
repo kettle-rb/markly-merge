@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe Markly::Merge::TableMatchRefiner do
   subject(:refiner) { described_class.new(**options) }
 
@@ -205,8 +207,10 @@ RSpec.describe Markly::Merge::TableMatchRefiner do
       it "identifies as table by class name" do
         # Create a mock object with "Table" in its class name
         table_like = Class.new do
-          def self.name
-            "CustomTableNode"
+          class << self
+            def name
+              "CustomTableNode"
+            end
           end
         end.new
 

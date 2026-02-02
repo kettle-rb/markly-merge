@@ -176,13 +176,11 @@ puts "Debug: compute_table_similarity for each pair..."
 puts "-" * 70
 template_tables.each_with_index do |t_table, t_idx|
   dest_tables.each_with_index do |d_table, d_idx|
-    begin
-      score = refiner.send(:compute_table_similarity, t_table, d_table, t_idx, d_idx, template_tables.size, dest_tables.size)
-      puts "  Template[#{t_idx}] vs Dest[#{d_idx}]: score=#{score}"
-    rescue => e
-      puts "  Template[#{t_idx}] vs Dest[#{d_idx}]: ERROR - #{e.class}: #{e.message}"
-      puts "    #{e.backtrace.first(5).join("\n    ")}"
-    end
+    score = refiner.send(:compute_table_similarity, t_table, d_table, t_idx, d_idx, template_tables.size, dest_tables.size)
+    puts "  Template[#{t_idx}] vs Dest[#{d_idx}]: score=#{score}"
+  rescue => e
+    puts "  Template[#{t_idx}] vs Dest[#{d_idx}]: ERROR - #{e.class}: #{e.message}"
+    puts "    #{e.backtrace.first(5).join("\n    ")}"
   end
 end
 puts
@@ -214,13 +212,21 @@ if t_table.respond_to?(:first_child)
   child = t_table.first_child
   idx = 0
   while child
-    puts "  Child #{idx}: type=#{child.type rescue 'N/A'}"
+    puts "  Child #{idx}: type=#{begin
+      child.type
+    rescue
+      "N/A"
+    end}"
     child = child.respond_to?(:next_sibling) ? child.next_sibling : nil
     idx += 1
   end
 elsif t_table.respond_to?(:children)
   t_table.children.each_with_index do |child, idx|
-    puts "  Child #{idx}: type=#{child.type rescue 'N/A'}"
+    puts "  Child #{idx}: type=#{begin
+      child.type
+    rescue
+      "N/A"
+    end}"
   end
 else
   puts "  No children method available"
@@ -268,4 +274,3 @@ puts
 puts "=" * 70
 puts "Debug complete"
 puts "=" * 70
-

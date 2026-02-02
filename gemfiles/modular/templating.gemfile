@@ -15,11 +15,14 @@ if ENV.fetch("KETTLE_RB_DEV", "false").casecmp?("true")
   gem "json-merge", path: "../../../json-merge"                 # JSON code blocks
   gem "jsonc-merge", path: "../../../jsonc-merge"               # JSONC code blocks
   gem "markdown-merge", path: "../../../markdown-merge"         # generic markdown tools
-  gem "commonmarker-merge", path: "../../../commonmarker-merge" # commonmarker markdown merging
   gem "prism-merge", path: "../../../prism-merge"               # Ruby code blocks
   gem "psych-merge", path: "../../../psych-merge"               # YAML code blocks
   gem "rbs-merge", path: "../../../rbs-merge"                   # RBS code blocks
   gem "toml-merge", path: "../../../toml-merge"                 # TOML code blocks
+
+  # platform :mri do
+  #   gem "commonmarker-merge", path: "../../../commonmarker-merge" # commonmarker markdown merging
+  # end
 else
   # Not all of these are released yet, but eventually we will add integration specs to ensure future changes work with the family.
   # gem "bash-merge"          # dotenv code blocks
@@ -27,9 +30,12 @@ else
   # gem "json-merge"          # JSON code blocks
   # gem "jsonc-merge"         # JSONC code blocks
   # gem "markdown-merge"      # generic markdown tools
-  # gem "commonmarker-merge"  # commonmarker markdown merging
   # gem "prism-merge"         # Ruby code blocks
   # gem "psych-merge"         # YAML code blocks
   # gem "rbs-merge"           # RBS code blocks
   # gem "toml-merge"          # TOML code blocks
+  #
+  # # platform :mri do
+  # #   gem "commonmarker-merge"  # commonmarker markdown merging
+  # # end
 end

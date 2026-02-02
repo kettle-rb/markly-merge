@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe Markly::Merge::DebugLogger do
   describe "module configuration" do
     it "has env_var_name set" do

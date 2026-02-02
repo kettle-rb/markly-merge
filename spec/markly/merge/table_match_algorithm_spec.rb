@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe Markly::Merge::TableMatchAlgorithm do
   subject(:algorithm) { described_class.new(**options) }
 
@@ -960,8 +962,7 @@ RSpec.describe Markly::Merge::TableMatchAlgorithm do
       it "returns 0.0 when first table has no rows" do
         # Create mock tables with no rows
         empty_table = double("Markly::Node")
-        allow(empty_table).to receive(:first_child).and_return(nil)
-        allow(empty_table).to receive(:type).and_return(:table)
+        allow(empty_table).to receive_messages(first_child: nil, type: :table)
 
         non_empty_table = table_node_from(<<~MARKDOWN)
           | A | B |
@@ -980,8 +981,7 @@ RSpec.describe Markly::Merge::TableMatchAlgorithm do
         MARKDOWN
 
         empty_table = double("Markly::Node")
-        allow(empty_table).to receive(:first_child).and_return(nil)
-        allow(empty_table).to receive(:type).and_return(:table)
+        allow(empty_table).to receive_messages(first_child: nil, type: :table)
 
         expect(algorithm.call(non_empty_table, empty_table)).to eq(0.0)
       end

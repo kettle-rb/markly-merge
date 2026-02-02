@@ -77,7 +77,31 @@ module Markly
     autoload :FreezeNode, "markly/merge/freeze_node"
     autoload :FileAnalysis, "markly/merge/file_analysis"
     autoload :SmartMerger, "markly/merge/smart_merger"
+    autoload :Backend, "markly/merge/backend"
+
+    # Eagerly load and register backend when this module is loaded
+    # This ensures the backend is available for tree_haver before any parsing happens
+    class << self
+      def ensure_backend_loaded!
+        Backend # Access constant to trigger autoload
+      end
+    end
   end
+end
+
+# Ensure backend is loaded and registered
+Markly::Merge.ensure_backend_loaded!
+
+# Register with ast-merge's MergeGemRegistry for RSpec dependency tags
+# Only register if MergeGemRegistry is loaded (i.e., in test environment)
+if defined?(Ast::Merge::RSpec::MergeGemRegistry)
+  Ast::Merge::RSpec::MergeGemRegistry.register(
+    :markly_merge,
+    require_path: "markly/merge",
+    merger_class: "Markly::Merge::SmartMerger",
+    test_source: "# Test\n\nParagraph",
+    category: :markdown,
+  )
 end
 
 Markly::Merge::Version.class_eval do
