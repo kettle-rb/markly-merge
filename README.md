@@ -31,7 +31,7 @@
 [rubygems-maint-policy]: https://github.com/ruby/rubygems/blob/b1ab33a3d52310a84d16b193991af07f5a6a07c0/doc/rubygems/POLICIES.md?plain=1#L187-L196
 [policy-fail]: https://www.reddit.com/r/ruby/comments/1ove9vp/rubycentral_hates_this_one_fact/
 
-[![Galtzo FLOSS Logo by Aboling0, CC BY-SA 4.0][🖼️galtzo-i]][🖼️galtzo-discord] [![ruby-lang Logo, Yukihiro Matsumoto, Ruby Visual Identity Team, CC BY-SA 2.5][🖼️ruby-lang-i]][🖼️ruby-lang] [![kettle-rb Logo by Aboling0, CC BY-SA 4.0][🖼️kettle-rb-i]][🖼️kettle-rb]
+[![Galtzo FLOSS Logo by Aboling0, CC BY-SA 4.0][🖼️galtzo-i]][✉️discord-invite] [![ruby-lang Logo, Yukihiro Matsumoto, Ruby Visual Identity Team, CC BY-SA 2.5][🖼️ruby-lang-i]][🖼️ruby-lang] [![kettle-rb Logo by Aboling0, CC BY-SA 4.0][🖼️kettle-rb-i]][🖼️kettle-rb]
 
 [🖼️galtzo-i]: https://logos.galtzo.com/assets/images/galtzo-floss/avatar-192px.svg
 [🖼️galtzo-discord]: https://discord.gg/3qme4XHNKN
@@ -42,11 +42,11 @@
 
 # ☯️ Markly::Merge
 
-[![Version][👽versioni]][👽version] [![GitHub tag (latest SemVer)][⛳️tag-img]][⛳️tag] [![License: MIT][📄license-img]][📄license-ref] [![Downloads Rank][👽dl-ranki]][👽dl-rank] [![Open Source Helpers][👽oss-helpi]][👽oss-help] [![CodeCov Test Coverage][🏀codecovi]][🏀codecov] [![Coveralls Test Coverage][🏀coveralls-img]][🏀coveralls] [![QLTY Test Coverage][🏀qlty-covi]][🏀qlty-cov] [![QLTY Maintainability][🏀qlty-mnti]][🏀qlty-mnt] [![CI Heads][🚎3-hd-wfi]][🚎3-hd-wf] [![CI Runtime Dependencies @ HEAD][🚎12-crh-wfi]][🚎12-crh-wf] [![CI Current][🚎11-c-wfi]][🚎11-c-wf] [![CI Truffle Ruby][🚎9-t-wfi]][🚎9-t-wf] [![Deps Locked][🚎13-🔒️-wfi]][🚎13-🔒️-wf] [![Deps Unlocked][🚎14-🔓️-wfi]][🚎14-🔓️-wf] [![CI Supported][🚎6-s-wfi]][🚎6-s-wf] [![CI Test Coverage][🚎2-cov-wfi]][🚎2-cov-wf] [![CI Style][🚎5-st-wfi]][🚎5-st-wf] [![CodeQL][🖐codeQL-img]][🖐codeQL] [![Apache SkyWalking Eyes License Compatibility Check][🚎15-🪪-wfi]][🚎15-🪪-wf]
+[![Version][👽versioni]][👽dl-rank] [![GitHub tag (latest SemVer)][⛳️tag-img]][⛳️tag] [![License: MIT][📄license-img]][📄license-ref] [![Downloads Rank][👽dl-ranki]][👽dl-rank] [![Open Source Helpers][👽oss-helpi]][👽oss-help] [![CodeCov Test Coverage][🏀codecovi]][🏀codecov] [![Coveralls Test Coverage][🏀coveralls-img]][🏀coveralls] [![QLTY Test Coverage][🏀qlty-covi]][🏀qlty-cov] [![QLTY Maintainability][🏀qlty-mnti]][🏀qlty-mnt] [![CI Heads][🚎3-hd-wfi]][🚎3-hd-wf] [![CI Runtime Dependencies @ HEAD][🚎12-crh-wfi]][🚎12-crh-wf] [![CI Current][🚎11-c-wfi]][🚎11-c-wf] [![CI Truffle Ruby][🚎9-t-wfi]][🚎9-t-wf] [![Deps Locked][🚎13-🔒️-wfi]][🚎13-🔒️-wf] [![Deps Unlocked][🚎14-🔓️-wfi]][🚎14-🔓️-wf] [![CI Supported][🚎6-s-wfi]][🚎6-s-wf] [![CI Test Coverage][🚎2-cov-wfi]][🚎2-cov-wf] [![CI Style][🚎5-st-wfi]][🚎5-st-wf] [![CodeQL][🖐codeQL-img]][🖐codeQL] [![Apache SkyWalking Eyes License Compatibility Check][🚎15-🪪-wfi]][🚎15-🪪-wf]
 
 `if ci_badges.map(&:color).detect { it != "green"}` ☝️ [let me know][🖼️galtzo-discord], as I may have missed the [discord notification][🖼️galtzo-discord].
 
----
+-----
 
 `if ci_badges.map(&:color).all? { it == "green"}` 👇️ send money so I can do more of this. FLOSS maintenance is now my full-time job.
 
@@ -54,38 +54,44 @@
 
 ## 🌻 Synopsis
 
-Markly::Merge is a standalone Ruby module that intelligently merges two versions of a Markdown file using Markly (libcmark-gfm) AST analysis. It's like a smart "git merge" specifically designed for Markdown documentation files. Built on top of [ast-merge](https://github.com/kettle-rb/ast-merge), it shares the same architecture as [prism-merge](https://github.com/kettle-rb/prism-merge) for Ruby source files.
+`markly-merge` is a thin wrapper around [markdown-merge][markdown-merge] that provides:
 
-For an alternative using Comrak (Rust), see [commonmarker-merge](https://github.com/kettle-rb/commonmarker-merge).
+  - **Hard dependency on Markly** - Ensures the libcmark-gfm (C) parser is installed
+  - **Markly-specific defaults** - Freeze token: `"markly-merge"`, `inner_merge_code_blocks: true`
+  - **Markly parse options** - Pass `flags:` and `extensions:` parameters
+    For an alternative using Comrak (Rust), see [commonmarker-merge][commonmarker-merge].
 
-### Key Features
+### Features (via markdown-merge)
 
-- **Markly-Powered**: Uses libcmark-gfm for accurate CommonMark + GFM parsing
-- **Structure-Aware**: Understands headings, lists, code blocks, tables, and more
-- **Intelligent**: Matches sections by heading structure and content signatures
-- **Comment-Preserving**: HTML comments are preserved in context
-- **Freeze Block Support**: Respects freeze markers (default: `markly-merge:freeze` / `markly-merge:unfreeze`) for merge control - customizable to match your project's conventions
-- **Full Provenance**: Tracks origin of every node
-- **Standalone**: Minimal dependencies - just `markly` and `ast-merge`
-- **Customizable**:
-  - `signature_generator` - callable custom signature generators
-  - `preference` - setting of `:template`, `:destination`, or a Hash for per-node-type preferences
-  - `add_template_only_nodes` - setting to retain sections that do not exist in destination
-  - `freeze_token` - customize freeze block markers (default: `"markly-merge"`)
+  - **Markly-Powered**: Uses libcmark-gfm for accurate CommonMark + GFM parsing
+  - **Structure-Aware**: Understands headings, lists, code blocks, tables, and more
+  - **Intelligent**: Matches sections by heading structure and content signatures
+  - **Comment-Preserving**: HTML comments are preserved in context
+  - **Freeze Block Support**: Respects freeze markers (default: `markly-merge:freeze` / `markly-merge:unfreeze`) for merge control - customizable to match your project's conventions
+  - **Type Normalization**: Canonical node types work across all markdown backends
+  - **Full Provenance**: Tracks origin of every node
+  - **Inner-Merge Code Blocks**: Enabled by default - merges fenced code blocks using language-specific mergers
+  - **Customizable**:
+      - `signature_generator` - callable custom signature generators
+      - `preference` - setting of `:template`, `:destination`, or a Hash for per-node-type preferences
+      - `add_template_only_nodes` - setting to retain sections that do not exist in destination
+      - `freeze_token` - customize freeze block markers (default: `"markly-merge"`)
+      - `flags` - Markly parse flags (e.g., `Markly::FOOTNOTES`, `Markly::SMART`)
+      - `extensions` - GFM extensions (`:table`, `:strikethrough`, `:autolink`, `:tagfilter`, `:tasklist`)
 
 ### Supported Node Types
 
-| Node Type | Signature Format | Matching Behavior |
-|-----------|------------------|-------------------|
-| Heading | `[:heading, level, text]` | Headings match by level and text content |
-| Paragraph | `[:paragraph, text_hash]` | Paragraphs match by content hash |
-| List | `[:list, type, item_count]` | Lists match by type (bullet/ordered) and structure |
-| List Item | `[:list_item, content_sig]` | Items match by content signature |
-| Code Block | `[:code_block, language, info]` | Code blocks match by language and info string |
-| Block Quote | `[:block_quote, content_sig]` | Block quotes match by content signature |
-| Table | `[:table, header_sig]` | Tables match by header structure |
-| HTML Block | `[:html_block, content]` | HTML blocks match by content |
-| Thematic Break | `[:thematic_break]` | Horizontal rules always match |
+| Node Type      | Signature Format                | Matching Behavior                                  |
+|----------------|---------------------------------|----------------------------------------------------|
+| Heading        | `[:heading, level, text]`       | Headings match by level and text content           |
+| Paragraph      | `[:paragraph, text_hash]`       | Paragraphs match by content hash                   |
+| List           | `[:list, type, item_count]`     | Lists match by type (bullet/ordered) and structure |
+| List Item      | `[:list_item, content_sig]`     | Items match by content signature                   |
+| Code Block     | `[:code_block, language, info]` | Code blocks match by language and info string      |
+| Block Quote    | `[:block_quote, content_sig]`   | Block quotes match by content signature            |
+| Table          | `[:table, header_sig]`          | Tables match by header structure                   |
+| HTML Block     | `[:html_block, content]`        | HTML blocks match by content                       |
+| Thematic Break | `[:thematic_break]`             | Horizontal rules always match                      |
 
 ### Example
 
@@ -103,30 +109,57 @@ File.write("merged.md", result.to_markdown)
 
 ### The `*-merge` Gem Family
 
-This gem is part of a family of gems that provide intelligent merging for various file formats:
+The `*-merge` gem family provides intelligent, AST-based merging for various file formats. At the foundation is [tree_haver][tree_haver], which provides a unified cross-Ruby parsing API that works seamlessly across MRI, JRuby, and TruffleRuby.
 
-| Gem | Format | Parser | Description |
-|-----|--------|--------|-------------|
-| [ast-merge][ast-merge] | Text | internal | Shared infrastructure for all `*-merge` gems |
-| [prism-merge][prism-merge] | Ruby | [Prism][prism] | Smart merge for Ruby source files |
-| [psych-merge][psych-merge] | YAML | [Psych][psych] | Smart merge for YAML files |
-| [json-merge][json-merge] | JSON | [tree-sitter-json][ts-json] | Smart merge for JSON files |
-| [jsonc-merge][jsonc-merge] | JSONC | [tree-sitter-jsonc][ts-jsonc] | ⚠️ Proof of concept; Smart merge for JSON with Comments |
-| [bash-merge][bash-merge] | Bash | [tree-sitter-bash][ts-bash] | Smart merge for Bash scripts |
-| [rbs-merge][rbs-merge] | RBS | [RBS][rbs] | Smart merge for Ruby type signatures |
-| [dotenv-merge][dotenv-merge] | Dotenv | internal ([dotenv][dotenv]) | Smart merge for `.env` files |
-| [toml-merge][toml-merge] | TOML | [tree-sitter-toml][ts-toml] | Smart merge for TOML files |
-| [markdown-merge][markdown-merge] | Markdown | _base classes_ | Shared foundation for Markdown mergers |
-| [markly-merge][markly-merge] | Markdown | [Markly][markly] | Smart merge for Markdown (CommonMark via libcmark-gfm) |
-| [commonmarker-merge][commonmarker-merge] | Markdown | [Commonmarker][commonmarker] | Smart merge for Markdown (CommonMark via comrak) |
+| Gem                                      |                                                         Version / CI                                                         | Language<br>/ Format | Parser Backend(s)                                                                                     | Description                                                                      |
+|------------------------------------------|:----------------------------------------------------------------------------------------------------------------------------:|----------------------|-------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| [tree_haver][tree_haver]                 |                 [![Version][tree_haver-gem-i]][tree_haver-gem] <br/> [![CI][tree_haver-ci-i]][tree_haver-ci]                 | Multi                | Supported Backends: MRI C, Rust, FFI, Java, Prism, Psych, Commonmarker, Markly, Citrus, Parslet       | **Foundation**: Cross-Ruby adapter for parsing libraries (like Faraday for HTTP) |
+| [ast-merge][ast-merge]                   |                   [![Version][ast-merge-gem-i]][ast-merge-gem] <br/> [![CI][ast-merge-ci-i]][ast-merge-ci]                   | Text                 | internal                                                                                              | **Infrastructure**: Shared base classes and merge logic for all `*-merge` gems   |
+| [bash-merge][bash-merge]                 |                 [![Version][bash-merge-gem-i]][bash-merge-gem] <br/> [![CI][bash-merge-ci-i]][bash-merge-ci]                 | Bash                 | [tree-sitter-bash][ts-bash] (via tree_haver)                                                          | Smart merge for Bash scripts                                                     |
+| [commonmarker-merge][commonmarker-merge] | [![Version][commonmarker-merge-gem-i]][commonmarker-merge-gem] <br/> [![CI][commonmarker-merge-ci-i]][commonmarker-merge-ci] | Markdown             | [Commonmarker][commonmarker] (via tree_haver)                                                         | Smart merge for Markdown (CommonMark via comrak Rust)                            |
+| [dotenv-merge][dotenv-merge]             |             [![Version][dotenv-merge-gem-i]][dotenv-merge-gem] <br/> [![CI][dotenv-merge-ci-i]][dotenv-merge-ci]             | Dotenv               | internal                                                                                              | Smart merge for `.env` files                                                     |
+| [json-merge][json-merge]                 |                 [![Version][json-merge-gem-i]][json-merge-gem] <br/> [![CI][json-merge-ci-i]][json-merge-ci]                 | JSON                 | [tree-sitter-json][ts-json] (via tree_haver)                                                          | Smart merge for JSON files                                                       |
+| [jsonc-merge][jsonc-merge]               |               [![Version][jsonc-merge-gem-i]][jsonc-merge-gem] <br/> [![CI][jsonc-merge-ci-i]][jsonc-merge-ci]               | JSONC                | [tree-sitter-jsonc][ts-jsonc] (via tree_haver)                                                        | ⚠️ Proof of concept; Smart merge for JSON with Comments                          |
+| [markdown-merge][markdown-merge]         |         [![Version][markdown-merge-gem-i]][markdown-merge-gem] <br/> [![CI][markdown-merge-ci-i]][markdown-merge-ci]         | Markdown             | [Commonmarker][commonmarker] / [Markly][markly] (via tree_haver), [Parslet][parslet]                  | **Foundation**: Shared base for Markdown mergers with inner code block merging   |
+| [markly-merge][markly-merge]             |             [![Version][markly-merge-gem-i]][markly-merge-gem] <br/> [![CI][markly-merge-ci-i]][markly-merge-ci]             | Markdown             | [Markly][markly] (via tree_haver)                                                                     | Smart merge for Markdown (CommonMark via cmark-gfm C)                            |
+| [prism-merge][prism-merge]               |               [![Version][prism-merge-gem-i]][prism-merge-gem] <br/> [![CI][prism-merge-ci-i]][prism-merge-ci]               | Ruby                 | [Prism][prism] (`prism` std lib gem)                                                                  | Smart merge for Ruby source files                                                |
+| [psych-merge][psych-merge]               |               [![Version][psych-merge-gem-i]][psych-merge-gem] <br/> [![CI][psych-merge-ci-i]][psych-merge-ci]               | YAML                 | [Psych][psych] (`psych` std lib gem)                                                                  | Smart merge for YAML files                                                       |
+| [rbs-merge][rbs-merge]                   |                   [![Version][rbs-merge-gem-i]][rbs-merge-gem] <br/> [![CI][rbs-merge-ci-i]][rbs-merge-ci]                   | RBS                  | [tree-sitter-bash][ts-rbs] (via tree_haver), [RBS][rbs] (`rbs` std lib gem)                           | Smart merge for Ruby type signatures                                             |
+| [toml-merge][toml-merge]                 |                 [![Version][toml-merge-gem-i]][toml-merge-gem] <br/> [![CI][toml-merge-ci-i]][toml-merge-ci]                 | TOML                 | [Parslet + toml][toml], [Citrus + toml-rb][toml-rb], [tree-sitter-toml][ts-toml] (all via tree_haver) | Smart merge for TOML files                                                       |
+
+#### Backend Platform Compatibility
+
+tree_haver supports multiple parsing backends, but not all backends work on all Ruby platforms:
+
+| Platform 👉️<br> TreeHaver Backend 👇️          | MRI | JRuby | TruffleRuby | Notes                                                                      |
+|-------------------------------------------------|:---:|:-----:|:-----------:|----------------------------------------------------------------------------|
+| **MRI** ([ruby_tree_sitter][ruby_tree_sitter])  |  ✅  |   ❌   |      ❌      | C extension, MRI only                                                      |
+| **Rust** ([tree_stump][tree_stump])             |  ✅  |   ❌   |      ❌      | Rust extension via magnus/rb-sys, MRI only                                 |
+| **FFI** ([ffi][ffi])                            |  ✅  |   ✅   |      ❌      | TruffleRuby's FFI doesn't support `STRUCT_BY_VALUE`                        |
+| **Java** ([jtreesitter][jtreesitter])           |  ❌  |   ✅   |      ❌      | JRuby only, requires grammar JARs                                          |
+| **Prism** ([prism][prism])                      |  ✅  |   ✅   |      ✅      | Ruby parsing, stdlib in Ruby 3.4+                                          |
+| **Psych** ([psych][psych])                      |  ✅  |   ✅   |      ✅      | YAML parsing, stdlib                                                       |
+| **Citrus** ([citrus][citrus])                   |  ✅  |   ✅   |      ✅      | Pure Ruby PEG parser, no native dependencies                               |
+| **Parslet** ([parslet][parslet])                |  ✅  |   ✅   |      ✅      | Pure Ruby PEG parser, no native dependencies                               |
+| **Commonmarker** ([commonmarker][commonmarker]) |  ✅  |   ❌   |      ❓      | Rust extension for Markdown (via [commonmarker-merge][commonmarker-merge]) |
+| **Markly** ([markly][markly])                   |  ✅  |   ❌   |      ❓      | C extension for Markdown  (via [markly-merge][markly-merge])               |
+
+**Legend**: ✅ = Works, ❌ = Does not work, ❓ = Untested
+
+**Why some backends don't work on certain platforms**:
+
+- **JRuby**: Runs on the JVM; cannot load native C/Rust extensions (`.so` files)
+- **TruffleRuby**: Has C API emulation via Sulong/LLVM, but it doesn't expose all MRI internals that native extensions require (e.g., `RBasic.flags`, `rb_gc_writebarrier`)
+- **FFI on TruffleRuby**: TruffleRuby's FFI implementation doesn't support returning structs by value, which tree-sitter's C API requires
 
 **Example implementations** for the gem templating use case:
 
-| Gem | Purpose | Description |
-|-----|---------|-------------|
-| [kettle-dev][kettle-dev] | Gem Development | Gem templating tool using `*-merge` gems |
-| [kettle-jem][kettle-jem] | Gem Templating | Gem template library with smart merge support |
+| Gem                      | Purpose         | Description                                   |
+|--------------------------|-----------------|-----------------------------------------------|
+| [kettle-dev][kettle-dev] | Gem Development | Gem templating tool using `*-merge` gems      |
+| [kettle-jem][kettle-jem] | Gem Templating  | Gem template library with smart merge support |
 
+[tree_haver]: https://github.com/kettle-rb/tree_haver
 [ast-merge]: https://github.com/kettle-rb/ast-merge
 [prism-merge]: https://github.com/kettle-rb/prism-merge
 [psych-merge]: https://github.com/kettle-rb/psych-merge
@@ -141,57 +174,126 @@ This gem is part of a family of gems that provide intelligent merging for variou
 [commonmarker-merge]: https://github.com/kettle-rb/commonmarker-merge
 [kettle-dev]: https://github.com/kettle-rb/kettle-dev
 [kettle-jem]: https://github.com/kettle-rb/kettle-jem
+[tree_haver-gem]: https://bestgems.org/gems/tree_haver
+[ast-merge-gem]: https://bestgems.org/gems/ast-merge
+[prism-merge-gem]: https://bestgems.org/gems/prism-merge
+[psych-merge-gem]: https://bestgems.org/gems/psych-merge
+[json-merge-gem]: https://bestgems.org/gems/json-merge
+[jsonc-merge-gem]: https://bestgems.org/gems/jsonc-merge
+[bash-merge-gem]: https://bestgems.org/gems/bash-merge
+[rbs-merge-gem]: https://bestgems.org/gems/rbs-merge
+[dotenv-merge-gem]: https://bestgems.org/gems/dotenv-merge
+[toml-merge-gem]: https://bestgems.org/gems/toml-merge
+[markdown-merge-gem]: https://bestgems.org/gems/markdown-merge
+[markly-merge-gem]: https://bestgems.org/gems/markly-merge
+[commonmarker-merge-gem]: https://bestgems.org/gems/commonmarker-merge
+[kettle-dev-gem]: https://bestgems.org/gems/kettle-dev
+[kettle-jem-gem]: https://bestgems.org/gems/kettle-jem
+[tree_haver-gem-i]: https://img.shields.io/gem/v/tree_haver.svg
+[ast-merge-gem-i]: https://img.shields.io/gem/v/ast-merge.svg
+[prism-merge-gem-i]: https://img.shields.io/gem/v/prism-merge.svg
+[psych-merge-gem-i]: https://img.shields.io/gem/v/psych-merge.svg
+[json-merge-gem-i]: https://img.shields.io/gem/v/json-merge.svg
+[jsonc-merge-gem-i]: https://img.shields.io/gem/v/jsonc-merge.svg
+[bash-merge-gem-i]: https://img.shields.io/gem/v/bash-merge.svg
+[rbs-merge-gem-i]: https://img.shields.io/gem/v/rbs-merge.svg
+[dotenv-merge-gem-i]: https://img.shields.io/gem/v/dotenv-merge.svg
+[toml-merge-gem-i]: https://img.shields.io/gem/v/toml-merge.svg
+[markdown-merge-gem-i]: https://img.shields.io/gem/v/markdown-merge.svg
+[markly-merge-gem-i]: https://img.shields.io/gem/v/markly-merge.svg
+[commonmarker-merge-gem-i]: https://img.shields.io/gem/v/commonmarker-merge.svg
+[kettle-dev-gem-i]: https://img.shields.io/gem/v/kettle-dev.svg
+[kettle-jem-gem-i]: https://img.shields.io/gem/v/kettle-jem.svg
+[tree_haver-ci-i]: https://github.com/kettle-rb/tree_haver/actions/workflows/current.yml/badge.svg
+[ast-merge-ci-i]: https://github.com/kettle-rb/ast-merge/actions/workflows/current.yml/badge.svg
+[prism-merge-ci-i]: https://github.com/kettle-rb/prism-merge/actions/workflows/current.yml/badge.svg
+[psych-merge-ci-i]: https://github.com/kettle-rb/psych-merge/actions/workflows/current.yml/badge.svg
+[json-merge-ci-i]: https://github.com/kettle-rb/json-merge/actions/workflows/current.yml/badge.svg
+[jsonc-merge-ci-i]: https://github.com/kettle-rb/jsonc-merge/actions/workflows/current.yml/badge.svg
+[bash-merge-ci-i]: https://github.com/kettle-rb/bash-merge/actions/workflows/current.yml/badge.svg
+[rbs-merge-ci-i]: https://github.com/kettle-rb/rbs-merge/actions/workflows/current.yml/badge.svg
+[dotenv-merge-ci-i]: https://github.com/kettle-rb/dotenv-merge/actions/workflows/current.yml/badge.svg
+[toml-merge-ci-i]: https://github.com/kettle-rb/toml-merge/actions/workflows/current.yml/badge.svg
+[markdown-merge-ci-i]: https://github.com/kettle-rb/markdown-merge/actions/workflows/current.yml/badge.svg
+[markly-merge-ci-i]: https://github.com/kettle-rb/markly-merge/actions/workflows/current.yml/badge.svg
+[commonmarker-merge-ci-i]: https://github.com/kettle-rb/commonmarker-merge/actions/workflows/current.yml/badge.svg
+[kettle-dev-ci-i]: https://github.com/kettle-rb/kettle-dev/actions/workflows/current.yml/badge.svg
+[kettle-jem-ci-i]: https://github.com/kettle-rb/kettle-jem/actions/workflows/current.yml/badge.svg
+[tree_haver-ci]: https://github.com/kettle-rb/tree_haver/actions/workflows/current.yml
+[ast-merge-ci]: https://github.com/kettle-rb/ast-merge/actions/workflows/current.yml
+[prism-merge-ci]: https://github.com/kettle-rb/prism-merge/actions/workflows/current.yml
+[psych-merge-ci]: https://github.com/kettle-rb/psych-merge/actions/workflows/current.yml
+[json-merge-ci]: https://github.com/kettle-rb/json-merge/actions/workflows/current.yml
+[jsonc-merge-ci]: https://github.com/kettle-rb/jsonc-merge/actions/workflows/current.yml
+[bash-merge-ci]: https://github.com/kettle-rb/bash-merge/actions/workflows/current.yml
+[rbs-merge-ci]: https://github.com/kettle-rb/rbs-merge/actions/workflows/current.yml
+[dotenv-merge-ci]: https://github.com/kettle-rb/dotenv-merge/actions/workflows/current.yml
+[toml-merge-ci]: https://github.com/kettle-rb/toml-merge/actions/workflows/current.yml
+[markdown-merge-ci]: https://github.com/kettle-rb/markdown-merge/actions/workflows/current.yml
+[markly-merge-ci]: https://github.com/kettle-rb/markly-merge/actions/workflows/current.yml
+[commonmarker-merge-ci]: https://github.com/kettle-rb/commonmarker-merge/actions/workflows/current.yml
+[kettle-dev-ci]: https://github.com/kettle-rb/kettle-dev/actions/workflows/current.yml
+[kettle-jem-ci]: https://github.com/kettle-rb/kettle-jem/actions/workflows/current.yml
 [prism]: https://github.com/ruby/prism
 [psych]: https://github.com/ruby/psych
+[ffi]: https://github.com/ffi/ffi
 [ts-json]: https://github.com/tree-sitter/tree-sitter-json
 [ts-jsonc]: https://gitlab.com/WhyNotHugo/tree-sitter-jsonc
 [ts-bash]: https://github.com/tree-sitter/tree-sitter-bash
+[ts-rbs]: https://github.com/joker1007/tree-sitter-rbs
 [ts-toml]: https://github.com/tree-sitter-grammars/tree-sitter-toml
-[rbs]: https://github.com/ruby/rbs
 [dotenv]: https://github.com/bkeepers/dotenv
-[markly]: https://github.com/kivikakk/markly
+[rbs]: https://github.com/ruby/rbs
+[toml-rb]: https://github.com/emancu/toml-rb
+[toml]: https://github.com/jm/toml
+[markly]: https://github.com/ioquatix/markly
 [commonmarker]: https://github.com/gjtorikian/commonmarker
+[ruby_tree_sitter]: https://github.com/Faveod/ruby-tree-sitter
+[tree_stump]: https://github.com/joker1007/tree_stump
+[jtreesitter]: https://central.sonatype.com/artifact/io.github.tree-sitter/jtreesitter
+[citrus]: https://github.com/mjackson/citrus
+[parslet]: https://github.com/kschiess/parslet
 
 ## 💡 Info you can shake a stick at
 
-| Tokens to Remember      | [![Gem name][⛳️name-img]][⛳️gem-name] [![Gem namespace][⛳️namespace-img]][⛳️gem-namespace]                                                                                                                                                                                                                                                                          |
-|-------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Works with JRuby        | [![JRuby 10.0 Compat][💎jruby-c-i]][🚎11-c-wf] [![JRuby HEAD Compat][💎jruby-headi]][🚎3-hd-wf]                                                                                                          |
-| Works with Truffle Ruby | [![Truffle Ruby 23.1 Compat][💎truby-23.1i]][🚎9-t-wf] [![Truffle Ruby 24.1 Compat][💎truby-c-i]][🚎11-c-wf]                                                                                                                                                            |
-| Works with MRI Ruby 3   | [![Ruby 3.2 Compat][💎ruby-3.2i]][🚎6-s-wf] [![Ruby 3.3 Compat][💎ruby-3.3i]][🚎6-s-wf] [![Ruby 3.4 Compat][💎ruby-c-i]][🚎11-c-wf] [![Ruby HEAD Compat][💎ruby-headi]][🚎3-hd-wf]                                                                                         |
-| Support & Community     | [![Join Me on Daily.dev's RubyFriends][✉️ruby-friends-img]][✉️ruby-friends] [![Live Chat on Discord][✉️discord-invite-img-ftb]][✉️discord-invite] [![Get help from me on Upwork][👨🏼‍🏫expsup-upwork-img]][👨🏼‍🏫expsup-upwork] [![Get help from me on Codementor][👨🏼‍🏫expsup-codementor-img]][👨🏼‍🏫expsup-codementor]                                       |
-| Source                  | [![Source on GitLab.com][📜src-gl-img]][📜src-gl] [![Source on CodeBerg.org][📜src-cb-img]][📜src-cb] [![Source on Github.com][📜src-gh-img]][📜src-gh] [![The best SHA: dQw4w9WgXcQ!][🧮kloc-img]][🧮kloc]                                                                                                                                                         |
-| Documentation           | [![Current release on RubyDoc.info][📜docs-cr-rd-img]][🚎yard-current] [![YARD on Galtzo.com][📜docs-head-rd-img]][🚎yard-head] [![Maintainer Blog][🚂maint-blog-img]][🚂maint-blog] [![GitLab Wiki][📜gl-wiki-img]][📜gl-wiki] [![GitHub Wiki][📜gh-wiki-img]][📜gh-wiki]                                                                                          |
-| Compliance              | [![License: MIT][📄license-img]][📄license-ref] [![Compatible with Apache Software Projects: Verified by SkyWalking Eyes][📄license-compat-img]][📄license-compat] [![📄ilo-declaration-img]][📄ilo-declaration] [![Security Policy][🔐security-img]][🔐security] [![Contributor Covenant 2.1][🪇conduct-img]][🪇conduct] [![SemVer 2.0.0][📌semver-img]][📌semver] |
-| Style                   | [![Enforced Code Style Linter][💎rlts-img]][💎rlts] [![Keep-A-Changelog 1.0.0][📗keep-changelog-img]][📗keep-changelog] [![Gitmoji Commits][📌gitmoji-img]][📌gitmoji] [![Compatibility appraised by: appraisal2][💎appraisal2-img]][💎appraisal2]                                                                                                                  |
-| Maintainer 🎖️          | [![Follow Me on LinkedIn][💖🖇linkedin-img]][💖🖇linkedin] [![Follow Me on Ruby.Social][💖🐘ruby-mast-img]][💖🐘ruby-mast] [![Follow Me on Bluesky][💖🦋bluesky-img]][💖🦋bluesky] [![Contact Maintainer][🚂maint-contact-img]][🚂maint-contact] [![My technical writing][💖💁🏼‍♂️devto-img]][💖💁🏼‍♂️devto]                                                      |
-| `...` 💖                | [![Find Me on WellFound:][💖✌️wellfound-img]][💖✌️wellfound] [![Find Me on CrunchBase][💖💲crunchbase-img]][💖💲crunchbase] [![My LinkTree][💖🌳linktree-img]][💖🌳linktree] [![More About Me][💖💁🏼‍♂️aboutme-img]][💖💁🏼‍♂️aboutme] [🧊][💖🧊berg] [🐙][💖🐙hub]  [🛖][💖🛖hut] [🧪][💖🧪lab]                                                                   |
+| Tokens to Remember      | [![Gem name][⛳️name-img]][👽dl-rank] [![Gem namespace][⛳️namespace-img]][📜src-gh]                                                                                                                                                                                                                                                                                                         |
+|-------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Works with JRuby        | [![JRuby 10.0 Compat][💎jruby-c-i]][🚎11-c-wf] [![JRuby HEAD Compat][💎jruby-headi]][🚎3-hd-wf]                                                                                                                                                                                                                                                                                            |
+| Works with Truffle Ruby | [![Truffle Ruby 23.1 Compat][💎truby-23.1i]][🚎9-t-wf] [![Truffle Ruby 24.1 Compat][💎truby-c-i]][🚎11-c-wf]                                                                                                                                                                                                                                                                               |
+| Works with MRI Ruby 3   | [![Ruby 3.2 Compat][💎ruby-3.2i]][🚎6-s-wf] [![Ruby 3.3 Compat][💎ruby-3.3i]][🚎6-s-wf] [![Ruby 3.4 Compat][💎ruby-c-i]][🚎11-c-wf] [![Ruby HEAD Compat][💎ruby-headi]][🚎3-hd-wf]                                                                                                                                                                                                         |
+| Support & Community     | [![Join Me on Daily.dev's RubyFriends][✉️ruby-friends-img]][✉️ruby-friends] [![Live Chat on Discord][✉️discord-invite-img-ftb]][✉️discord-invite] [![Get help from me on Upwork][👨🏼‍🏫expsup-upwork-img]][👨🏼‍🏫expsup-upwork] [![Get help from me on Codementor][👨🏼‍🏫expsup-codementor-img]][👨🏼‍🏫expsup-codementor]                                                              |
+| Source                  | [![Source on GitLab.com][📜src-gl-img]][📜src-gl] [![Source on CodeBerg.org][📜src-cb-img]][📜src-cb] [![Source on Github.com][📜src-gh-img]][📜src-gh] [![The best SHA: dQw4w9WgXcQ\!][🧮kloc-img]][🧮kloc]                                                                                                                                                                               |
+| Documentation           | [![Current release on RubyDoc.info][📜docs-cr-rd-img]][🚎yard-current] [![YARD on Galtzo.com][📜docs-head-rd-img]][🚎yard-head] [![Maintainer Blog][🚂maint-blog-img]][🚂maint-blog] [![GitLab Wiki][📜gl-wiki-img]][📜gl-wiki] [![GitHub Wiki][📜gh-wiki-img]][📜gh-wiki]                                                                                                                 |
+| Compliance              | [![License: MIT][📄license-img]][📄license-ref] [![Compatible with Apache Software Projects: Verified by SkyWalking Eyes][📄license-compat-img]][📄license-compat] [![📄ilo-declaration-img][📄ilo-declaration-img]][📄ilo-declaration] [![Security Policy][🔐security-img]][🔐security] [![Contributor Covenant 2.1][🪇conduct-img]][🪇conduct] [![SemVer 2.0.0][📌semver-img]][📌semver] |
+| Style                   | [![Enforced Code Style Linter][💎rlts-img]][💎rlts] [![Keep-A-Changelog 1.0.0][📗keep-changelog-img]][📗keep-changelog] [![Gitmoji Commits][📌gitmoji-img]][📌gitmoji] [![Compatibility appraised by: appraisal2][💎appraisal2-img]][💎appraisal2]                                                                                                                                         |
+| Maintainer 🎖️          | [![Follow Me on LinkedIn][💖🖇linkedin-img]][💖🖇linkedin] [![Follow Me on Ruby.Social][💖🐘ruby-mast-img]][💖🐘ruby-mast] [![Follow Me on Bluesky][💖🦋bluesky-img]][💖🦋bluesky] [![Contact Maintainer][🚂maint-contact-img]][🚂maint-contact] [![My technical writing][💖💁🏼‍♂️devto-img]][💖💁🏼‍♂️devto]                                                                             |
+| `...` 💖                | [![Find Me on WellFound:][💖✌️wellfound-img]][💖✌️wellfound] [![Find Me on CrunchBase][💖💲crunchbase-img]][💖💲crunchbase] [![My LinkTree][💖🌳linktree-img]][💖🌳linktree] [![More About Me][💖💁🏼‍♂️aboutme-img]][💖💁🏼‍♂️aboutme] [🧊][💖🧊berg] [🐙][💖🐙hub]  [🛖][💖🛖hut] [🧪][💖🧪lab]                                                                                          |
 
 ### Compatibility
 
 Compatible with MRI Ruby 3.2.0+, and concordant releases of JRuby, and TruffleRuby.
 
-| 🚚 _Amazing_ test matrix was brought to you by | 🔎 appraisal2 🔎 and the color 💚 green 💚             |
+| 🚚 *Amazing* test matrix was brought to you by | 🔎 appraisal2 🔎 and the color 💚 green 💚             |
 |------------------------------------------------|--------------------------------------------------------|
-| 👟 Check it out!                               | ✨ [github.com/appraisal-rb/appraisal2][💎appraisal2] ✨ |
+| 👟 Check it out\!                              | ✨ [github.com/appraisal-rb/appraisal2][💎appraisal2] ✨ |
 
 ### Federated DVCS
 
 <details markdown="1">
   <summary>Find this repo on federated forges (Coming soon!)</summary>
 
-| Federated [DVCS][💎d-in-dvcs] Repository        | Status                                                                | Issues                    | PRs                      | Wiki                      | CI                       | Discussions                  |
-|-------------------------------------------------|-----------------------------------------------------------------------|---------------------------|--------------------------|---------------------------|--------------------------|------------------------------|
-| 🧪 [kettle-rb/markly-merge on GitLab][📜src-gl]   | The Truth                                                             | [💚][🤝gl-issues]         | [💚][🤝gl-pulls]         | [💚][📜gl-wiki]           | 🐭 Tiny Matrix           | ➖                            |
-| 🧊 [kettle-rb/markly-merge on CodeBerg][📜src-cb] | An Ethical Mirror ([Donate][🤝cb-donate])                             | [💚][🤝cb-issues]         | [💚][🤝cb-pulls]         | ➖                         | ⭕️ No Matrix             | ➖                            |
-| 🐙 [kettle-rb/markly-merge on GitHub][📜src-gh]   | Another Mirror                                                        | [💚][🤝gh-issues]         | [💚][🤝gh-pulls]         | [💚][📜gh-wiki]           | 💯 Full Matrix           | [💚][gh-discussions]         |
-| 🎮️ [Discord Server][✉️discord-invite]          | [![Live Chat on Discord][✉️discord-invite-img-ftb]][✉️discord-invite] | [Let's][✉️discord-invite] | [talk][✉️discord-invite] | [about][✉️discord-invite] | [this][✉️discord-invite] | [library!][✉️discord-invite] |
+| Federated [DVCS][💎d-in-dvcs] Repository          | Status                                                                | Issues                     | PRs                       | Wiki                       | CI                        | Discussions                    |
+|---------------------------------------------------|-----------------------------------------------------------------------|----------------------------|---------------------------|----------------------------|---------------------------|--------------------------------|
+| 🧪 [kettle-rb/markly-merge on GitLab][📜src-gl]   | The Truth                                                             | [💚][🤝gl-issues]          | [💚][🤝gl-pulls]          | [💚][📜gl-wiki]            | 🐭 Tiny Matrix            | ➖                              |
+| 🧊 [kettle-rb/markly-merge on CodeBerg][📜src-cb] | An Ethical Mirror ([Donate][🤝cb-donate])                             | [💚][🤝cb-issues]          | [💚][🤝cb-pulls]          | ➖                          | ⭕️ No Matrix              | ➖                              |
+| 🐙 [kettle-rb/markly-merge on GitHub][📜src-gh]   | Another Mirror                                                        | [💚][🤝gh-issues]          | [💚][🤝gh-pulls]          | [💚][📜gh-wiki]            | 💯 Full Matrix            | [💚][gh-discussions]           |
+| 🎮️ [Discord Server][🖼️galtzo-discord]           | [![Live Chat on Discord][✉️discord-invite-img-ftb]][✉️discord-invite] | [Let's][🖼️galtzo-discord] | [talk][🖼️galtzo-discord] | [about][🖼️galtzo-discord] | [this][🖼️galtzo-discord] | [library\!][🖼️galtzo-discord] |
 
 </details>
 
 [gh-discussions]: https://github.com/kettle-rb/markly-merge/discussions
 
-### Enterprise Support [![Tidelift](https://tidelift.com/badges/package/rubygems/markly-merge)](https://tidelift.com/subscription/pkg/rubygems-markly-merge?utm_source=rubygems-markly-merge&utm_medium=referral&utm_campaign=readme)
+### Enterprise Support [![Tidelift](https://tidelift.com/badges/package/rubygems/markly-merge)][🏙️entsup-tidelift]
 
 Available as part of the Tidelift Subscription.
 
@@ -202,15 +304,18 @@ The maintainers of this and thousands of other packages are working with Tidelif
 
 [![Get help from me on Tidelift][🏙️entsup-tidelift-img]][🏙️entsup-tidelift]
 
-- 💡Subscribe for support guarantees covering _all_ your FLOSS dependencies
-- 💡Tidelift is part of [Sonar][🏙️entsup-tidelift-sonar]
-- 💡Tidelift pays maintainers to maintain the software you depend on!<br/>📊`@`Pointy Haired Boss: An [enterprise support][🏙️entsup-tidelift] subscription is "[never gonna let you down][🧮kloc]", and *supports* open source maintainers
+  - 💡Subscribe for support guarantees covering *all* your FLOSS dependencies
 
-Alternatively:
+  - 💡Tidelift is part of [Sonar][🏙️entsup-tidelift-sonar]
 
-- [![Live Chat on Discord][✉️discord-invite-img-ftb]][✉️discord-invite]
-- [![Get help from me on Upwork][👨🏼‍🏫expsup-upwork-img]][👨🏼‍🏫expsup-upwork]
-- [![Get help from me on Codementor][👨🏼‍🏫expsup-codementor-img]][👨🏼‍🏫expsup-codementor]
+  - 💡Tidelift pays maintainers to maintain the software you depend on\!<br/>📊`@`Pointy Haired Boss: An [enterprise support][🏙️entsup-tidelift] subscription is "[never gonna let you down][🧮kloc]", and *supports* open source maintainers
+    Alternatively:
+
+  - [![Live Chat on Discord][✉️discord-invite-img-ftb]][✉️discord-invite]
+
+  - [![Get help from me on Upwork][👨🏼‍🏫expsup-upwork-img]][👨🏼‍🏫expsup-upwork]
+
+  - [![Get help from me on Codementor][👨🏼‍🏫expsup-codementor-img]][👨🏼‍🏫expsup-codementor]
 
 </details>
 
@@ -294,7 +399,7 @@ merger = Markly::Merge::SmartMerger.new(
 
 ### Simple Merge
 
-```ruby
+````ruby
 require "markly/merge"
 
 # Template defines the structure
@@ -334,13 +439,13 @@ MD
 merger = Markly::Merge::SmartMerger.new(template, destination)
 result = merger.merge
 puts result.to_markdown
-```
+````
 
 ### Using Freeze Blocks
 
 Freeze blocks protect sections from being overwritten during merge:
 
-```markdown
+````markdown
 # My Project
 
 ## Installation
@@ -353,7 +458,7 @@ during template merges, regardless of what the template contains.
 ## Usage
 
 Standard usage section from template.
-```
+````
 
 Content between `<!-- markly-merge:freeze -->` and `<!-- markly-merge:unfreeze -->` markers is preserved from the destination file.
 
@@ -394,22 +499,26 @@ and [Tidelift][🏙️entsup-tidelift].
 
 ### Open Collective for Individuals
 
-Support us with a monthly donation and help us continue our activities. [[Become a backer](https://opencollective.com/kettle-rb#backer)]
+Support us with a monthly donation and help us continue our activities. \[[Become a backer][🖇osc-backers]\]
 
 NOTE: [kettle-readme-backers][kettle-readme-backers] updates this list every day, automatically.
 
 <!-- OPENCOLLECTIVE-INDIVIDUALS:START -->
+
 No backers yet. Be the first!
+
 <!-- OPENCOLLECTIVE-INDIVIDUALS:END -->
 
 ### Open Collective for Organizations
 
-Become a sponsor and get your logo on our README on GitHub with a link to your site. [[Become a sponsor](https://opencollective.com/kettle-rb#sponsor)]
+Become a sponsor and get your logo on our README on GitHub with a link to your site. \[[Become a sponsor][🖇osc-sponsors]\]
 
 NOTE: [kettle-readme-backers][kettle-readme-backers] updates this list every day, automatically.
 
 <!-- OPENCOLLECTIVE-ORGANIZATIONS:START -->
+
 No sponsors yet. Be the first!
+
 <!-- OPENCOLLECTIVE-ORGANIZATIONS:END -->
 
 [kettle-readme-backers]: https://github.com/kettle-rb/markly-merge/blob/main/exe/kettle-readme-backers
@@ -463,7 +572,7 @@ chat rooms and mailing lists agrees to follow the [![Contributor Covenant 2.1][�
 
 Made with [contributors-img][🖐contrib-rocks].
 
-Also see GitLab Contributors: [https://gitlab.com/kettle-rb/markly-merge/-/graphs/main][🚎contributors-gl]
+Also see GitLab Contributors: <https://gitlab.com/kettle-rb/markly-merge/-/graphs/main>
 
 <details>
     <summary>⭐️ Star History</summary>
@@ -487,9 +596,9 @@ a new version should be immediately released that restores compatibility.
 Breaking changes to the public API will only be introduced with new major versions.
 
 > dropping support for a platform is both obviously and objectively a breaking change <br/>
->—Jordan Harband ([@ljharb](https://github.com/ljharb), maintainer of SemVer) [in SemVer issue 716][📌semver-breaking]
+> —Jordan Harband ([@ljharb](https://github.com/ljharb), maintainer of SemVer) [in SemVer issue 716][📌semver-breaking]
 
-I understand that policy doesn't work universally ("exceptions to every rule!"),
+I understand that policy doesn't work universally ("exceptions to every rule\!"),
 but it is the policy here.
 As such, in many cases it is good to specify a dependency on this library using
 the [Pessimistic Version Constraint][📌pvc] with two digits of precision.
@@ -509,7 +618,7 @@ is a *breaking change* to an API, and for that reason the bike shedding is endle
 To get a better understanding of how SemVer is intended to work over a project's lifetime,
 read this article from the creator of SemVer:
 
-- ["Major Version Numbers are Not Sacred"][📌major-versions-not-sacred]
+  - ["Major Version Numbers are Not Sacred"][📌major-versions-not-sacred]
 
 </details>
 
@@ -525,7 +634,7 @@ See [LICENSE.txt][📄license] for the official [Copyright Notice][📄copyright
 
 <ul>
     <li>
-        Copyright (c) 2023, 2025 Peter H. Boling, of
+        Copyright (c) 2025 Peter H. Boling, of
         <a href="https://discord.gg/3qme4XHNKN">
             Galtzo.com
             <picture>
@@ -548,7 +657,7 @@ To join the community or get help 👇️ Join the Discord.
 
 [![Live Chat on Discord][✉️discord-invite-img-ftb]][✉️discord-invite]
 
-To say "thanks!" ☝️ Join the Discord or 👇️ send money.
+To say "thanks\!" ☝️ Join the Discord or 👇️ send money.
 
 [![Sponsor kettle-rb/markly-merge on Open Source Collective][🖇osc-all-bottom-img]][🖇osc] 💌 [![Sponsor me on GitHub Sponsors][🖇sponsor-bottom-img]][🖇sponsor] 💌 [![Sponsor me on Liberapay][⛳liberapay-bottom-img]][⛳liberapay] 💌 [![Donate on PayPal][🖇paypal-bottom-img]][🖇paypal]
 
@@ -591,7 +700,6 @@ Thanks for RTFM. ☺️
 [✉️discord-invite-img-ftb]: https://img.shields.io/discord/1373797679469170758?style=for-the-badge&logo=discord
 [✉️ruby-friends-img]: https://img.shields.io/badge/daily.dev-%F0%9F%92%8E_Ruby_Friends-0A0A0A?style=for-the-badge&logo=dailydotdev&logoColor=white
 [✉️ruby-friends]: https://app.daily.dev/squads/rubyfriends
-
 [✇bundle-group-pattern]: https://gist.github.com/pboling/4564780
 [⛳️gem-namespace]: https://github.com/kettle-rb/markly-merge
 [⛳️namespace-img]: https://img.shields.io/badge/namespace-Markly::Merge-3C2D2D.svg?style=square&logo=ruby&logoColor=white

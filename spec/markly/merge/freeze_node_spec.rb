@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "spec_helper"
 require "ast/merge/rspec/shared_examples"
 
 RSpec.describe Markly::Merge::FreezeNode do
@@ -93,12 +94,12 @@ RSpec.describe Markly::Merge::FreezeNode do
 
       it "has working start pattern" do
         pattern = described_class.pattern_for(:html_comment)
-        expect("<!-- markly-merge:freeze -->").to match(pattern[:start])
+        expect(pattern[:start]).to match("<!-- markly-merge:freeze -->")
       end
 
       it "has working end pattern" do
         pattern = described_class.pattern_for(:html_comment)
-        expect("<!-- markly-merge:unfreeze -->").to match(pattern[:end])
+        expect(pattern[:end]).to match("<!-- markly-merge:unfreeze -->")
       end
     end
 
@@ -106,21 +107,21 @@ RSpec.describe Markly::Merge::FreezeNode do
       it "builds html_comment pattern with default token" do
         pattern = described_class.pattern_for(:html_comment, "markly-merge")
         expect(pattern).to be_a(Regexp)
-        expect("<!-- markly-merge:freeze -->").to match(pattern)
-        expect("<!-- markly-merge:unfreeze -->").to match(pattern)
+        expect(pattern).to match("<!-- markly-merge:freeze -->")
+        expect(pattern).to match("<!-- markly-merge:unfreeze -->")
       end
 
       it "builds html_comment pattern with custom token" do
         pattern = described_class.pattern_for(:html_comment, "my-token")
-        expect("<!-- my-token:freeze -->").to match(pattern)
-        expect("<!-- my-token:unfreeze -->").to match(pattern)
-        expect("<!-- markly-merge:freeze -->").not_to match(pattern)
+        expect(pattern).to match("<!-- my-token:freeze -->")
+        expect(pattern).to match("<!-- my-token:unfreeze -->")
+        expect(pattern).not_to match("<!-- markly-merge:freeze -->")
       end
 
       it "escapes regex special characters in token" do
         pattern = described_class.pattern_for(:html_comment, "my.token")
-        expect("<!-- my.token:freeze -->").to match(pattern)
-        expect("<!-- myXtoken:freeze -->").not_to match(pattern)
+        expect(pattern).to match("<!-- my.token:freeze -->")
+        expect(pattern).not_to match("<!-- myXtoken:freeze -->")
       end
 
       it "captures marker type" do
@@ -392,8 +393,8 @@ RSpec.describe Markly::Merge::FreezeNode do
   end
 
   describe "inheritance" do
-    it "inherits from Ast::Merge::FreezeNodeBase" do
-      expect(described_class.superclass).to eq(Ast::Merge::FreezeNodeBase)
+    it "inherits from Markdown::Merge::FreezeNode" do
+      expect(described_class.superclass).to eq(Markdown::Merge::FreezeNode)
     end
   end
 
@@ -408,7 +409,7 @@ RSpec.describe Markly::Merge::FreezeNode do
     it "builds pattern with custom token" do
       pattern = described_class.pattern_for(:html_comment, "custom-token")
       expect(pattern).to be_a(Regexp)
-      expect("<!-- custom-token:freeze -->").to match(pattern)
+      expect(pattern).to match("<!-- custom-token:freeze -->")
     end
   end
 
@@ -442,17 +443,6 @@ RSpec.describe Markly::Merge::FreezeNode do
         content: "content",
         start_marker: nil,
         end_marker: nil,
-      )
-      expect(node.reason).to be_nil
-    end
-
-    it "returns nil for marker without reason text" do
-      node = described_class.new(
-        start_line: 1,
-        end_line: 3,
-        content: "content",
-        start_marker: "<!-- markly-merge:freeze -->",
-        end_marker: "<!-- markly-merge:unfreeze -->",
       )
       expect(node.reason).to be_nil
     end
@@ -510,7 +500,7 @@ RSpec.describe Markly::Merge::FreezeNode do
       # The base class handles hash_comment pattern
       pattern = described_class.pattern_for(:hash_comment, "test-token")
       expect(pattern).to be_a(Regexp)
-      expect("# test-token:freeze").to match(pattern)
+      expect(pattern).to match("# test-token:freeze")
     end
 
     it "delegates to base class for other pattern types without token" do

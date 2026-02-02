@@ -81,12 +81,11 @@ Gem::Specification.new do |spec|
   # Listed files are the relative paths from bindir above.
   spec.executables = []
 
-  # Parser and rendering
-  spec.add_dependency("markly", "~> 0.15")                              # Markdown parsing and rendering
+  # Hard dependency on markly parser
+  spec.add_dependency("markly", "~> 0.15", ">= 0.15.2")                 # Markdown parsing and rendering
 
-  # Shared merge infrastructure
-  spec.add_dependency("ast-merge", "~> 1.0")                            # ruby >= 3.2.0
-  spec.add_dependency("markdown-merge", "~> 1.0")                       # ruby >= 3.2.0
+  # Shared merge infrastructure (ast-merge and tree_haver are transitive via markdown-merge)
+  spec.add_dependency("markdown-merge", "~> 1.0", ">= 1.0.2")           # ruby >= 3.2.0
 
   # Utilities
   spec.add_dependency("version_gem", "~> 1.1", ">= 1.1.9")              # ruby >= 2.2.0

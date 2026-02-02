@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "spec_helper"
 require "ast/merge/rspec/shared_examples"
 
 RSpec.describe Markly::Merge::ConflictResolver do
@@ -84,9 +85,9 @@ RSpec.describe Markly::Merge::ConflictResolver do
   end
 
   describe "#resolve" do
-    # Use the paragraph (index 1) which has different content
-    let(:template_node) { template_analysis.statements[1] }
-    let(:dest_node) { dest_analysis.statements[1] }
+    # Use the paragraph (index 2 after gap_line at index 1) which has different content
+    let(:template_node) { template_analysis.statements[2] }
+    let(:dest_node) { dest_analysis.statements[2] }
 
     context "with :destination preference" do
       let(:resolver) do
@@ -260,9 +261,11 @@ RSpec.describe Markly::Merge::ConflictResolver do
     context "with node without source_position" do
       it "falls back to to_commonmark" do
         node = double("MockNode")
-        allow(node).to receive(:is_a?).with(Ast::Merge::FreezeNodeBase).and_return(false)
-        allow(node).to receive(:source_position).and_return(nil)
-        allow(node).to receive(:to_commonmark).and_return("commonmark output")
+        allow(node).to receive_messages(
+          is_a?: false,
+          source_position: nil,
+          to_commonmark: "commonmark output",
+        )
 
         result = resolver.send(:node_to_text, node, template_analysis)
         expect(result).to eq("commonmark output")
@@ -272,9 +275,11 @@ RSpec.describe Markly::Merge::ConflictResolver do
     context "with node with incomplete position (missing end line)" do
       it "falls back to to_commonmark" do
         node = double("MockNode")
-        allow(node).to receive(:is_a?).with(Ast::Merge::FreezeNodeBase).and_return(false)
-        allow(node).to receive(:source_position).and_return({start_line: 1})
-        allow(node).to receive(:to_commonmark).and_return("fallback output")
+        allow(node).to receive_messages(
+          is_a?: false,
+          source_position: {start_line: 1},
+          to_commonmark: "fallback output",
+        )
 
         result = resolver.send(:node_to_text, node, template_analysis)
         expect(result).to eq("fallback output")

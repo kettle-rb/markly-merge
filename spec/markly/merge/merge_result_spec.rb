@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe Markly::Merge::MergeResult do
   describe "#initialize" do
     it "creates a result with content" do

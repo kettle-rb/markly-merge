@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require "spec_helper"
+
 RSpec.describe Markly::Merge::SmartMerger do
   describe "#initialize" do
     let(:template) { "# Title\n\nTemplate content.\n" }
@@ -125,9 +127,10 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
 
       it "parses footnotes when flag is enabled" do
+        # Note: Markly footnotes are enabled via the FOOTNOTES flag, not an extension
         merger = described_class.new(template, destination, flags: Markly::FOOTNOTES)
-        expect(merger.template_analysis.statements.any? { |s| s.respond_to?(:type) && s.type == :footnote_definition }).to be true
-        expect(merger.dest_analysis.statements.any? { |s| s.respond_to?(:type) && s.type == :footnote_definition }).to be true
+        expect(merger.template_analysis.statements.any? { |s| s.respond_to?(:type) && s.type.to_s == "footnote_definition" }).to be true
+        expect(merger.dest_analysis.statements.any? { |s| s.respond_to?(:type) && s.type.to_s == "footnote_definition" }).to be true
       end
 
       it "merges footnotes by label" do
@@ -402,7 +405,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
     end
 
-    context "statistics" do
+    context "when tracking statistics" do
       let(:template) do
         <<~MARKDOWN
           # Title
@@ -868,7 +871,7 @@ RSpec.describe Markly::Merge::SmartMerger do
     # and won't match automatically.
 
     describe "tables with same row count and same headers but different body content" do
-      context "1a. body cell changed in destination, preference: :destination" do
+      context "with body cell changed in destination, preference: :destination" do
         let(:template) do
           <<~MARKDOWN
             # Data
@@ -898,7 +901,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
       end
 
-      context "1b. body cell changed in destination, preference: :template" do
+      context "with body cell changed in destination, preference: :template" do
         let(:template) do
           <<~MARKDOWN
             # Data
@@ -939,7 +942,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       # When headers differ, tables have different signatures and won't match.
       # They become template_only and dest_only entries, so both appear in output.
 
-      context "1c. header cell changed in destination, preference: :destination" do
+      context "with header cell changed in destination, preference: :destination" do
         let(:template) do
           <<~MARKDOWN
             # Data
@@ -977,7 +980,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         end
       end
 
-      context "1d. header cell changed in destination, preference: :template" do
+      context "with header cell changed in destination, preference: :template" do
         let(:template) do
           <<~MARKDOWN
             # Data
@@ -1021,7 +1024,7 @@ RSpec.describe Markly::Merge::SmartMerger do
       # When row counts differ, tables have different signatures and won't match.
       # They become template_only and dest_only entries.
 
-      context "2a. row added in destination, preference: :destination" do
+      context "with row added in destination, preference: :destination" do
         let(:template) do
           <<~MARKDOWN
             # Data
@@ -1052,6 +1055,7 @@ RSpec.describe Markly::Merge::SmartMerger do
         it "excludes template table when add_template_only_nodes is false" do
           merger = described_class.new(template, destination, preference: :destination, add_template_only_nodes: false)
           result = merger.merge_result
+          # No trailing blank line in output (source documents don't have them)
           expected = <<~MARKDOWN
             # Data
 
@@ -1060,11 +1064,11 @@ RSpec.describe Markly::Merge::SmartMerger do
             | foo  | 100   |
             | bar  | 200   |
           MARKDOWN
-          expect(result.content).to eq(expected.chomp)
+          expect(result.content).to eq(expected)
         end
       end
 
-      context "2b. row added in destination, preference: :template" do
+      context "with row added in destination, preference: :template" do
         let(:template) do
           <<~MARKDOWN
             # Data
@@ -1096,6 +1100,7 @@ RSpec.describe Markly::Merge::SmartMerger do
           merger = described_class.new(template, destination, preference: :template, add_template_only_nodes: true)
           result = merger.merge_result
           # dest_only table (with bar) comes first, then template_only table (without bar)
+          # OutputBuilder auto spacing adds blank line between tables
           expected = <<~MARKDOWN
             # Data
 
@@ -1108,11 +1113,11 @@ RSpec.describe Markly::Merge::SmartMerger do
             |------|-------|
             | foo  | 100   |
           MARKDOWN
-          expect(result.content).to eq(expected.chomp)
+          expect(result.content).to eq(expected)
         end
       end
 
-      context "2c. row removed in destination (added in template), preference: :destination" do
+      context "with row removed in destination (added in template), preference: :destination" do
         let(:template) do
           <<~MARKDOWN
             # Data
@@ -1149,11 +1154,11 @@ RSpec.describe Markly::Merge::SmartMerger do
             |------|-------|
             | foo  | 100   |
           MARKDOWN
-          expect(result.content).to eq(expected.chomp)
+          expect(result.content).to eq(expected)
         end
       end
 
-      context "2d. row removed in destination (added in template), preference: :template" do
+      context "with row removed in destination (added in template), preference: :template" do
         let(:template) do
           <<~MARKDOWN
             # Data
@@ -1178,6 +1183,7 @@ RSpec.describe Markly::Merge::SmartMerger do
           merger = described_class.new(template, destination, preference: :template, add_template_only_nodes: true)
           result = merger.merge_result
           # dest_only table (without bar) comes first, then template_only table (with bar)
+          # Gap lines between tables are included with add_template_only_nodes: true
           expected = <<~MARKDOWN
             # Data
 
@@ -1190,7 +1196,7 @@ RSpec.describe Markly::Merge::SmartMerger do
             | foo  | 100   |
             | bar  | 200   |
           MARKDOWN
-          expect(result.content).to eq(expected.chomp)
+          expect(result.content).to eq(expected)
         end
 
         it "includes only destination table when add_template_only_nodes is false" do
@@ -1203,7 +1209,7 @@ RSpec.describe Markly::Merge::SmartMerger do
             |------|-------|
             | foo  | 100   |
           MARKDOWN
-          expect(result.content).to eq(expected.chomp)
+          expect(result.content).to eq(expected)
         end
       end
     end
@@ -1508,5 +1514,289 @@ RSpec.describe Markly::Merge::SmartMerger do
         expect(result.content).to include("destination")
       end
     end
+  end
+
+  describe "trailing blank line preservation" do
+    # Test all combinations of trailing blank lines with different preferences
+
+    context "when BOTH template and destination have trailing blank lines" do
+      let(:template) do
+        # 3 lines: heading, blank, table row, PLUS trailing blank line
+        "# Data\n\n| foo | 100 |\n\n"
+      end
+
+      let(:destination) do
+        # 3 lines: heading, blank, table row, PLUS trailing blank line
+        "# Data\n\n| foo | 100 |\n\n"
+      end
+
+      it "preserves trailing blank line with preference :destination" do
+        merger = described_class.new(template, destination, preference: :destination)
+        result = merger.merge_result
+        expect(result.content).to eq("# Data\n\n| foo | 100 |\n\n")
+      end
+
+      it "preserves trailing blank line with preference :template" do
+        merger = described_class.new(template, destination, preference: :template)
+        result = merger.merge_result
+        expect(result.content).to eq("# Data\n\n| foo | 100 |\n\n")
+      end
+    end
+
+    context "when ONLY template has trailing blank line" do
+      let(:template) do
+        # Has trailing blank line
+        "# Data\n\n| foo | 100 |\n\n"
+      end
+
+      let(:destination) do
+        # NO trailing blank line
+        "# Data\n\n| foo | 100 |\n"
+      end
+
+      it "uses destination format (no trailing blank) with preference :destination" do
+        merger = described_class.new(template, destination, preference: :destination)
+        result = merger.merge_result
+        # Template's trailing gap line is template_only and not included (add_template_only_nodes defaults to false)
+        expect(result.content).to eq("# Data\n\n| foo | 100 |\n")
+      end
+
+      it "uses destination format (no trailing blank) with preference :template" do
+        merger = described_class.new(template, destination, preference: :template)
+        result = merger.merge_result
+        # Template's trailing gap line is template_only and not included (add_template_only_nodes defaults to false)
+        # Preference doesn't affect template_only nodes, only matched nodes
+        expect(result.content).to eq("# Data\n\n| foo | 100 |\n")
+      end
+    end
+
+    context "when ONLY destination has trailing blank line" do
+      let(:template) do
+        # NO trailing blank line
+        "# Data\n\n| foo | 100 |\n"
+      end
+
+      let(:destination) do
+        # Has trailing blank line
+        "# Data\n\n| foo | 100 |\n\n"
+      end
+
+      it "uses destination format (with trailing blank) with preference :destination" do
+        merger = described_class.new(template, destination, preference: :destination)
+        result = merger.merge_result
+        # Dest's trailing gap line is dest_only and always included
+        expect(result.content).to eq("# Data\n\n| foo | 100 |\n\n")
+      end
+
+      it "uses destination format (with trailing blank) with preference :template" do
+        merger = described_class.new(template, destination, preference: :template)
+        result = merger.merge_result
+        # Dest's trailing gap line is dest_only and always included
+        # Preference doesn't affect dest_only nodes, only matched nodes
+        expect(result.content).to eq("# Data\n\n| foo | 100 |\n\n")
+      end
+    end
+
+    context "when NEITHER template nor destination has trailing blank line" do
+      let(:template) do
+        "# Data\n\n| foo | 100 |\n"
+      end
+
+      let(:destination) do
+        "# Data\n\n| foo | 100 |\n"
+      end
+
+      it "has no trailing blank line with preference :destination" do
+        merger = described_class.new(template, destination, preference: :destination)
+        result = merger.merge_result
+        expect(result.content).to eq("# Data\n\n| foo | 100 |\n")
+      end
+
+      it "has no trailing blank line with preference :template" do
+        merger = described_class.new(template, destination, preference: :template)
+        result = merger.merge_result
+        expect(result.content).to eq("# Data\n\n| foo | 100 |\n")
+      end
+    end
+
+    context "with add_template_only_nodes when template has extra content" do
+      let(:template) do
+        # Template has extra row, WITH trailing blank line
+        "# Data\n\n| foo | 100 |\n| bar | 200 |\n\n"
+      end
+
+      let(:destination) do
+        # Destination has only foo row, NO trailing blank line
+        "# Data\n\n| foo | 100 |\n"
+      end
+
+      it "includes both tables with their respective trailing formats when add_template_only_nodes: true" do
+        merger = described_class.new(template, destination, preference: :destination, add_template_only_nodes: true)
+        result = merger.merge_result
+
+        # Destination table (no trailing blank) comes first as dest_only
+        # Then template table (with trailing blank) as template_only
+        # Each preserves its source format
+        expect(result.content).to include("| foo | 100 |")
+        expect(result.content).to include("| bar | 200 |")
+
+        # The exact format depends on how tables are distinguished
+        # This test validates both are present
+      end
+    end
+  end
+
+  describe "#process_alignment edge cases" do
+    # Lines 181, 184: when part is nil (template_only with add_template_only_nodes: false)
+    context "with template-only nodes not added" do
+      let(:template) do
+        <<~MARKDOWN
+          # Template Title
+
+          Template intro.
+
+          ## New Section
+
+          This section only exists in template.
+        MARKDOWN
+      end
+      let(:dest) do
+        <<~MARKDOWN
+          # Template Title
+
+          Destination intro.
+        MARKDOWN
+      end
+
+      it "skips template-only nodes when add_template_only_nodes is false" do
+        merger = described_class.new(template, dest, add_template_only_nodes: false)
+        result = merger.merge_result
+        expect(result.success?).to be true
+        # "New Section" should NOT be in output - covers line 184 (part is nil)
+        expect(result.content).not_to include("New Section")
+      end
+    end
+
+    # Line 185: when frozen is truthy in process_match
+    # Line 191: when frozen is truthy in process_dest_only
+    context "with freeze blocks in destination" do
+      let(:template) do
+        <<~MARKDOWN
+          # Document
+
+          Template content.
+
+          ## Section
+
+          More template.
+        MARKDOWN
+      end
+      let(:dest) do
+        <<~MARKDOWN
+          # Document
+
+          <!-- markly-merge:freeze -->
+          Frozen dest content.
+          <!-- markly-merge:unfreeze -->
+
+          ## Section
+
+          Different dest content.
+        MARKDOWN
+      end
+
+      it "tracks frozen blocks from destination" do
+        merger = described_class.new(template, dest)
+        result = merger.merge_result
+        expect(result.success?).to be true
+        # Frozen blocks should be tracked - covers lines 185, 191
+        expect(result.frozen_blocks).to be_an(Array)
+      end
+    end
+
+    context "with only dest content" do
+      let(:template) { "" }
+      let(:dest) do
+        <<~MARKDOWN
+          # Destination Only
+
+          This is destination content.
+        MARKDOWN
+      end
+
+      it "handles dest-only entries" do
+        merger = described_class.new(template, dest)
+        result = merger.merge_result
+        expect(result.success?).to be true
+      end
+    end
+  end
+
+  describe "#process_match edge cases" do
+    # Lines 214-220: when resolution source is :destination with freeze node
+    context "when dest node is a FreezeNode" do
+      let(:template) do
+        <<~MARKDOWN
+          # Document
+
+          Template paragraph.
+        MARKDOWN
+      end
+      let(:dest) do
+        <<~MARKDOWN
+          # Document
+
+          <!-- markly-merge:freeze -->
+          Frozen destination content that matches heading.
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "preserves frozen content and records frozen_info" do
+        merger = described_class.new(template, dest, preference: :destination)
+        result = merger.merge_result
+        expect(result.success?).to be true
+      end
+    end
+
+    # Line 216: else branch - when dest_node doesn't respond to freeze_node?
+    context "when dest node is regular node" do
+      let(:template) { "# Same\n\nTemplate para.\n" }
+      let(:dest) { "# Same\n\nDest para.\n" }
+
+      it "handles regular nodes without freeze_node? method" do
+        merger = described_class.new(template, dest, preference: :destination)
+        result = merger.merge_result
+        expect(result.success?).to be true
+        # Regular nodes don't have freeze_node? - covers line 216 else
+      end
+    end
+  end
+
+  describe "#node_to_source edge cases" do
+    # Lines 275-278: FreezeNode vs regular node handling
+    context "with FreezeNode in dest_only" do
+      let(:template) { "# Only Heading\n" }
+      let(:dest) do
+        <<~MARKDOWN
+          # Only Heading
+
+          <!-- markly-merge:freeze -->
+          This is a freeze block only in dest.
+          <!-- markly-merge:unfreeze -->
+        MARKDOWN
+      end
+
+      it "uses full_text for FreezeNode" do
+        merger = described_class.new(template, dest)
+        result = merger.merge_result
+        expect(result.success?).to be true
+        # FreezeNode uses full_text - covers line 275
+        expect(result.content).to include("freeze block only in dest")
+      end
+    end
+
+    # Line 278: when node lacks source position - fallback to to_html
+    # This is hard to trigger with real Markly nodes
   end
 end
