@@ -65,6 +65,7 @@ module Markly
     DEFAULT_INNER_MERGE_CODE_BLOCKS = true
 
     # Re-export shared classes from markdown-merge
+    # Re-export shared classes from markdown-merge
     FileAligner = Markdown::Merge::FileAligner
     ConflictResolver = Markdown::Merge::ConflictResolver
     MergeResult = Markdown::Merge::MergeResult

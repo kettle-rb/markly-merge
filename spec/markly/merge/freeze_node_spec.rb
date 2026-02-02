@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "ast/merge/rspec/shared_examples"
 
 RSpec.describe Markly::Merge::FreezeNode do
   # Note: We include only specific shared examples rather than the full "Ast::Merge::FreezeNodeBase"

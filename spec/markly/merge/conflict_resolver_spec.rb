@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "ast/merge/rspec/shared_examples"
 
 RSpec.describe Markly::Merge::ConflictResolver do
   # Use shared examples to validate base ConflictResolverBase integration
@@ -85,9 +84,21 @@ RSpec.describe Markly::Merge::ConflictResolver do
   end
 
   describe "#resolve" do
-    # Use the paragraph (index 2 after gap_line at index 1) which has different content
-    let(:template_node) { template_analysis.statements[2] }
-    let(:dest_node) { dest_analysis.statements[2] }
+    # Use the paragraph which has different content
+    let(:template_node) do
+      template_analysis.statements.find do |s|
+        (s.respond_to?(:merge_type) && s.merge_type == :paragraph) ||
+          (s.respond_to?(:type) && s.type.to_s == "paragraph")
+      end
+    end
+    let(:dest_node) do
+      dest_analysis.statements.find do |s|
+        (s.respond_to?(:merge_type) && s.merge_type == :paragraph) ||
+          (s.respond_to?(:type) && s.type.to_s == "paragraph")
+      end
+    end
+    let(:template_index) { template_analysis.statements.index(template_node) }
+    let(:dest_index) { dest_analysis.statements.index(dest_node) }
 
     context "with :destination preference" do
       let(:resolver) do
@@ -99,17 +110,17 @@ RSpec.describe Markly::Merge::ConflictResolver do
       end
 
       it "returns destination source" do
-        resolution = resolver.resolve(template_node, dest_node, template_index: 0, dest_index: 0)
+        resolution = resolver.resolve(template_node, dest_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:source]).to eq(:destination)
       end
 
       it "returns DECISION_DESTINATION" do
-        resolution = resolver.resolve(template_node, dest_node, template_index: 0, dest_index: 0)
+        resolution = resolver.resolve(template_node, dest_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:decision]).to eq(described_class::DECISION_DESTINATION)
       end
 
       it "includes both nodes" do
-        resolution = resolver.resolve(template_node, dest_node, template_index: 0, dest_index: 0)
+        resolution = resolver.resolve(template_node, dest_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:template_node]).to eq(template_node)
         expect(resolution[:dest_node]).to eq(dest_node)
       end
@@ -125,12 +136,12 @@ RSpec.describe Markly::Merge::ConflictResolver do
       end
 
       it "returns template source" do
-        resolution = resolver.resolve(template_node, dest_node, template_index: 0, dest_index: 0)
+        resolution = resolver.resolve(template_node, dest_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:source]).to eq(:template)
       end
 
       it "returns DECISION_TEMPLATE" do
-        resolution = resolver.resolve(template_node, dest_node, template_index: 0, dest_index: 0)
+        resolution = resolver.resolve(template_node, dest_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:decision]).to eq(described_class::DECISION_TEMPLATE)
       end
     end
@@ -182,17 +193,17 @@ RSpec.describe Markly::Merge::ConflictResolver do
 
       it "returns frozen decision" do
         expect(freeze_node).to be_a(Markly::Merge::FreezeNode)
-        resolution = resolver.resolve(template_node, freeze_node, template_index: 0, dest_index: 0)
+        resolution = resolver.resolve(template_node, freeze_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:decision]).to eq(described_class::DECISION_FROZEN)
       end
 
       it "uses destination source for frozen" do
-        resolution = resolver.resolve(template_node, freeze_node, template_index: 0, dest_index: 0)
+        resolution = resolver.resolve(template_node, freeze_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:source]).to eq(:destination)
       end
 
       it "includes reason" do
-        resolution = resolver.resolve(template_node, freeze_node, template_index: 0, dest_index: 0)
+        resolution = resolver.resolve(template_node, freeze_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:reason]).to eq("Custom reason")
       end
     end
@@ -200,13 +211,13 @@ RSpec.describe Markly::Merge::ConflictResolver do
     context "with frozen template node" do
       let(:template_source) do
         <<~MARKDOWN
-          <!-- markly-merge:freeze -->
+          <!-- markly-merge:freeze Custom reason -->
           ## Template Frozen
           <!-- markly-merge:unfreeze -->
         MARKDOWN
       end
       let(:template_analysis) { Markly::Merge::FileAnalysis.new(template_source) }
-      let(:template_freeze_node) { template_analysis.freeze_blocks.first }
+      let(:freeze_node) { template_analysis.freeze_blocks.first }
       let(:dest_node) { dest_analysis.statements.first }
 
       let(:resolver) do
@@ -218,14 +229,19 @@ RSpec.describe Markly::Merge::ConflictResolver do
       end
 
       it "returns frozen decision" do
-        expect(template_freeze_node).to be_a(Markly::Merge::FreezeNode)
-        resolution = resolver.resolve(template_freeze_node, dest_node, template_index: 0, dest_index: 0)
+        expect(freeze_node).to be_a(Markly::Merge::FreezeNode)
+        resolution = resolver.resolve(freeze_node, dest_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:decision]).to eq(described_class::DECISION_FROZEN)
       end
 
-      it "uses template source for frozen template" do
-        resolution = resolver.resolve(template_freeze_node, dest_node, template_index: 0, dest_index: 0)
+      it "uses template source for frozen" do
+        resolution = resolver.resolve(freeze_node, dest_node, template_index: template_index, dest_index: dest_index)
         expect(resolution[:source]).to eq(:template)
+      end
+
+      it "includes reason" do
+        resolution = resolver.resolve(freeze_node, dest_node, template_index: template_index, dest_index: dest_index)
+        expect(resolution[:reason]).to eq("Custom reason")
       end
     end
   end

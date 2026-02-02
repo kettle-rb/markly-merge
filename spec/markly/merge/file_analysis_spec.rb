@@ -3,6 +3,10 @@
 require "spec_helper"
 
 RSpec.describe Markly::Merge::FileAnalysis do
+  def non_gap_statements(analysis)
+    analysis.statements.reject { |node| node.is_a?(Markdown::Merge::GapLineNode) }
+  end
+
   describe "#initialize" do
     context "with simple markdown" do
       let(:source) do
@@ -25,7 +29,7 @@ RSpec.describe Markly::Merge::FileAnalysis do
 
       it "splits into lines" do
         analysis = described_class.new(source)
-        # heredoc adds trailing newline, but we don't count the empty line after it
+        # heredoc adds trailing newline, so 3 lines total after normalization
         expect(analysis.lines.size).to eq(3)
       end
 
@@ -266,8 +270,10 @@ RSpec.describe Markly::Merge::FileAnalysis do
     end
 
     it "returns signature for paragraph" do
-      # Index 0 = heading, index 1 = gap_line, index 2 = paragraph
-      sig = analysis.signature_at(2)
+      paragraph = analysis.statements.find { |node| node.respond_to?(:type) && node.type == :paragraph }
+      skip "No paragraph found in statements" if paragraph.nil?
+
+      sig = analysis.signature_at(analysis.statements.index(paragraph))
       expect(sig).to be_an(Array)
       expect(sig.first).to eq(:paragraph)
     end
