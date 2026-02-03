@@ -65,9 +65,11 @@ Please file a bug if you notice a violation of semantic versioning.
 
 #### Dependencies
 
+- `ast-merge` (~> 4.0) - shared merge infrastructure
 - `markly` (~> 0.15) - cmark-gfm C library
-- `markdown-merge` (~> 1.0) - central merge infrastructure
-- `version_gem` (~> 1.1)
+- `markdown-merge` (~> 1.0) - central merge infrastructure for markdown
+- `tree_haver` (~> 5.0) - normalized AST conventions
+- `version_gem` (~> 1.1) - smart versions for libraries
 
 ### Changed
 

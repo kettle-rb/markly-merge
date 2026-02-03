@@ -41,8 +41,10 @@ PATH
   remote: .
   specs:
     markly-merge (1.0.0)
+      ast-merge (~> 4.0, >= 4.0.5)
       markdown-merge (~> 1.0, >= 1.0.2)
       markly (~> 0.15, >= 0.15.2)
+      tree_haver (~> 5.0, >= 5.0.3)
       version_gem (~> 1.1, >= 1.1.9)
 
 GEM

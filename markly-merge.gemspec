@@ -87,6 +87,12 @@ Gem::Specification.new do |spec|
   # Shared merge infrastructure (ast-merge and tree_haver are transitive via markdown-merge)
   spec.add_dependency("markdown-merge", "~> 1.0", ">= 1.0.2")           # ruby >= 3.2.0
 
+  # Parser - tree_haver provides unified AST interfaces for tree-sitter, citrus, parslet & more
+  spec.add_dependency("tree_haver", "~> 5.0", ">= 5.0.3")               # ruby >= 3.2.0
+
+  # Shared merge infrastructure
+  spec.add_dependency("ast-merge", "~> 4.0", ">= 4.0.5")                # ruby >= 3.2.0
+
   # Utilities
   spec.add_dependency("version_gem", "~> 1.1", ">= 1.1.9")              # ruby >= 2.2.0
 
