@@ -19,7 +19,7 @@ GIT
 
 GIT
   remote: https://github.com/pboling/tree_stump.git
-  revision: 0363593b8f34bd44f598ae7c3e217d7ec960fd2e
+  revision: 4d83ba27eb37497d634984bcb06c19d4d80f2c2d
   branch: tree_haver
   specs:
     tree_stump (0.1.0)
