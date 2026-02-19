@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: AGENTS
+  
+    &mdash; Documentation by YARD 0.9.38
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "AGENTS";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="file_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: AGENTS</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><div id='filecontents'><h1 id="agentsmd---markly-merge-development-guide">AGENTS.md - markly-merge Development Guide</h1>
+
+<h2 id="-project-overview">🎯 Project Overview</h2>
+
+<p><code>markly-merge</code> is a <strong>format-specific implementation of the <code>*-merge</code> gem family</strong> for Markdown files using the Markly parser. It provides intelligent Markdown file merging using AST analysis.</p>
+
+<p><strong>Core Philosophy</strong>: Intelligent Markdown merging that preserves structure, formatting, and links while applying updates from templates.</p>
+
+<p><strong>Repository</strong>: https://github.com/kettle-rb/markly-merge<br>
+<strong>Current Version</strong>: 1.0.0<br>
+<strong>Required Ruby</strong>: &gt;= 3.2.0 (currently developed against Ruby 4.0.1)</p>
+
+<h2 id="️-architecture-format-specific-implementation">🏗️ Architecture: Format-Specific Implementation</h2>
+
+<h3 id="what-markly-merge-provides">What markly-merge Provides</h3>
+
+<ul>
+  <li>
+<strong><code>Markly::Merge::SmartMerger</code></strong> – Markdown-specific SmartMerger implementation</li>
+  <li>
+<strong><code>Markly::Merge::FileAnalysis</code></strong> – Markdown file analysis with section extraction</li>
+  <li>
+<strong><code>Markly::Merge::NodeWrapper</code></strong> – Wrapper for Markly AST nodes</li>
+  <li>
+<strong><code>Markly::Merge::PartialTemplateMerger</code></strong> – Section-level partial merges</li>
+  <li>
+<strong><code>Markly::Merge::MergeResult</code></strong> – Markdown-specific merge result</li>
+  <li>
+<strong><code>Markly::Merge::ConflictResolver</code></strong> – Markdown conflict resolution</li>
+  <li>
+<strong><code>Markly::Merge::FreezeNode</code></strong> – Markdown freeze block support</li>
+  <li>
+<strong><code>Markly::Merge::DebugLogger</code></strong> – Markly-specific debug logging</li>
+</ul>
+
+<h3 id="key-dependencies">Key Dependencies</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>Gem</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+<code>ast-merge</code> (~&gt; 4.0)</td>
+      <td>Base classes and shared infrastructure</td>
+    </tr>
+    <tr>
+      <td>
+<code>tree_haver</code> (~&gt; 5.0)</td>
+      <td>Unified parser adapter (wraps Markly)</td>
+    </tr>
+    <tr>
+      <td>
+<code>markly</code> (~&gt; 0.15)</td>
+      <td>CommonMark Markdown parser (MRI only)</td>
+    </tr>
+    <tr>
+      <td>
+<code>version_gem</code> (~&gt; 1.1)</td>
+      <td>Version management</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="parser-backend">Parser Backend</h3>
+
+<p>markly-merge uses the Markly parser exclusively via TreeHaver’s <code>:markly</code> backend:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Backend</th>
+      <th>Parser</th>
+      <th>Platform</th>
+      <th>Notes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>:markly</code></td>
+      <td>Markly</td>
+      <td>MRI only</td>
+      <td>Fast CommonMark parser, native extension</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="-project-structure">📁 Project Structure</h2>
+
+<pre class="code ruby"><code class="ruby">lib/markly/merge/
+├── smart_merger.rb              # Main SmartMerger implementation
+├── partial_template_merger.rb   # Section-level merging
+├── file_analysis.rb             # Markdown file analysis
+├── node_wrapper.rb              # AST node wrapper
+├── merge_result.rb              # Merge result object
+├── conflict_resolver.rb         # Conflict resolution
+├── freeze_node.rb               # Freeze block support
+├── debug_logger.rb              # Debug logging
+└── version.rb
+
+spec/markly/merge/
+├── smart_merger_spec.rb
+├── partial_template_merger_spec.rb
+├── file_analysis_spec.rb
+└── integration/
+</code></pre>
+
+<h2 id="-development-workflows">🔧 Development Workflows</h2>
+
+<h3 id="running-tests">Running Tests</h3>
+
+<pre class="code language-bash"><code class="language-bash"># Full suite
+bundle exec rspec
+
+# Single file (disable coverage threshold check)
+K_SOUP_COV_MIN_HARD=false bundle exec rspec spec/markly/merge/smart_merger_spec.rb
+
+# Markly backend tests
+bundle exec rspec --tag markly
+</code></pre>
+
+<h3 id="coverage-reports">Coverage Reports</h3>
+
+<pre class="code language-bash"><code class="language-bash">cd /home/pboling/src/kettle-rb/ast-merge/vendor/markly-merge
+bin/rake coverage &amp;&amp; bin/kettle-soup-cover -d
+</code></pre>
+
+<h2 id="-project-conventions">📝 Project Conventions</h2>
+
+<h3 id="api-conventions">API Conventions</h3>
+
+<h4 id="smartmerger-api">SmartMerger API</h4>
+<ul>
+  <li>
+<code>merge</code> – Returns a <strong>String</strong> (the merged Markdown content)</li>
+  <li>
+<code>merge_result</code> – Returns a <strong>MergeResult</strong> object</li>
+  <li>
+<code>to_s</code> on MergeResult returns the merged content as a string</li>
+</ul>
+
+<h4 id="partialtemplatemerger-api">PartialTemplateMerger API</h4>
+<ul>
+  <li>
+<code>merge</code> – Merges a template section into a specific location in destination</li>
+  <li>Used by <code>ast-merge-recipe</code> for section-level updates</li>
+</ul>
+
+<h4 id="markdown-specific-features">Markdown-Specific Features</h4>
+
+<p><strong>Heading-Based Sections</strong>:</p>
+<pre class="code language-markdown"><code class="language-markdown"># Section 1
+Content for section 1
+
+## Subsection 1.1
+Nested content
+
+# Section 2
+Content for section 2
+</code></pre>
+
+<p><strong>Freeze Blocks</strong>:</p>
+<pre class="code language-markdown"><code class="language-markdown">&lt;!-- markly-merge:freeze --&gt;
+Custom content that should not be overridden
+&lt;!-- markly-merge:unfreeze --&gt;
+
+Standard content that merges normally
+</code></pre>
+
+<p><strong>Link Reference Preservation</strong>:</p>
+<pre class="code language-markdown"><code class="language-markdown">[link text][ref]
+
+[ref]: https://example.com
+</code></pre>
+
+<h2 id="-testing-patterns">🧪 Testing Patterns</h2>
+
+<h3 id="treehaver-dependency-tags">TreeHaver Dependency Tags</h3>
+
+<p><strong>Available tags</strong>:</p>
+<ul>
+  <li>
+<code>:markly</code> – Requires Markly backend</li>
+  <li>
+<code>:markdown_parsing</code> – Requires Markdown parser</li>
+</ul>
+
+<p>✅ <strong>CORRECT</strong>:</p>
+<pre class="code language-ruby"><code class="language-ruby">RSpec.describe Markly::Merge::SmartMerger, :markly do
+  # Skipped if Markly not available
+end
+</code></pre>
+
+<p>❌ <strong>WRONG</strong>:</p>
+<pre class="code language-ruby"><code class="language-ruby">before do
+  skip &quot;Requires Markly&quot; unless defined?(Markly)  # DO NOT DO THIS
+end
+</code></pre>
+
+<h2 id="-key-insights">💡 Key Insights</h2>
+
+<ol>
+  <li>
+<strong>Heading-based structure</strong>: Sections matched by heading text</li>
+  <li>
+<strong><code>.text</code> strips formatting</strong>: When matching by text, backticks and other formatting are removed</li>
+  <li>
+<strong>Link references preserved</strong>: Reference-style links maintained during merge</li>
+  <li>
+<strong>PartialTemplateMerger</strong>: Supports injecting template sections into specific locations</li>
+  <li>
+<strong>Freeze blocks use HTML comments</strong>: <code>&lt;!-- markly-merge:freeze --&gt;</code>
+</li>
+  <li>
+<strong>MRI only</strong>: Markly requires native extensions, MRI only</li>
+</ol>
+
+<h2 id="-common-pitfalls">🚫 Common Pitfalls</h2>
+
+<ol>
+  <li>
+<strong>Markly requires MRI</strong>: Does not work on JRuby or TruffleRuby</li>
+  <li>
+<strong>NEVER use manual skip checks</strong> – Use dependency tags (<code>:markly</code>)</li>
+  <li>
+<strong>Text matching strips formatting</strong> – Match on plain text, not markdown syntax</li>
+  <li>
+<strong>Do NOT load vendor gems</strong> – They are not part of this project; they do not exist in CI</li>
+  <li>
+<strong>Use <code>tmp/</code> for temporary files</strong> – Never use <code>/tmp</code> or other system directories</li>
+</ol>
+
+<h2 id="-markdown-specific-notes">🔧 Markdown-Specific Notes</h2>
+
+<h3 id="node-types">Node Types</h3>
+<pre class="code language-markdown"><code class="language-markdown">document         # Root node
+heading          # # Heading
+paragraph        # Regular text
+code_block       # ```code```
+list             # - item or 1. item
+link             # [text](url)
+image            # ![alt](src)
+</code></pre>
+
+<h3 id="text-matching-behavior">Text Matching Behavior</h3>
+<pre class="code language-markdown"><code class="language-markdown">Source:     ### The `*-merge` Gem Family
+.text:      &quot;The *-merge Gem Family\n&quot;
+
+# Backticks, bold, italic stripped in .text
+</code></pre>
+
+<h3 id="merge-behavior">Merge Behavior</h3>
+<ul>
+  <li>
+<strong>Headings</strong>: Matched by heading text (stripped of formatting)</li>
+  <li>
+<strong>Sections</strong>: Content from heading to next same-level heading</li>
+  <li>
+<strong>Paragraphs</strong>: Position-based within sections</li>
+  <li>
+<strong>Code blocks</strong>: Matched by language and content</li>
+  <li>
+<strong>Lists</strong>: Can be merged or replaced</li>
+  <li>
+<strong>Links</strong>: Reference-style links preserved</li>
+  <li>
+<strong>Freeze blocks</strong>: Protect customizations from template updates</li>
+</ul>
+</div></div>
+
+      <div id="footer">
+  Generated on Thu Feb 19 07:21:43 2026 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.38 (ruby-4.0.1).
+</div>
+
+    </div>
+  </body>
+</html>

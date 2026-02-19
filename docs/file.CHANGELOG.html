@@ -82,13 +82,13 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 
 <h3 id="security">Security</h3>
 
-<h2 id="100---2026-02-01">
-<a href="https://github.com/kettle-rb/markly-merge/compare/3dcd8b855b8a773f175ff34d31e3885a28a3e70b...v1.0.0">1.0.0</a> - 2026-02-01</h2>
+<h2 id="100---2026-02-19">
+<a href="https://github.com/kettle-rb/markly-merge/compare/3dcd8b855b8a773f175ff34d31e3885a28a3e70b...v1.0.0">1.0.0</a> - 2026-02-19</h2>
 
 <ul>
   <li>TAG: <a href="https://github.com/kettle-rb/markly-merge/tags/v1.0.0">v1.0.0</a>
 </li>
-  <li>COVERAGE: 88.14% – 171/194 lines in 7 files</li>
+  <li>COVERAGE: 83.82% – 171/204 lines in 7 files</li>
   <li>BRANCH COVERAGE: 41.30% – 19/46 branches in 7 files</li>
   <li>78.87% documented</li>
 </ul>
@@ -96,6 +96,7 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 <h3 id="added-1">Added</h3>
 
 <ul>
+  <li>AGENTS.md</li>
   <li>Initial release of markly-merge</li>
   <li>Thin wrapper around <code>markdown-merge</code> for Markly backend</li>
   <li>
@@ -147,46 +148,38 @@ Please file a bug if you notice a violation of semantic versioning.</p>
 </li>
     </ul>
   </li>
-</ul>
-
-<h4 id="dependencies">Dependencies</h4>
-
-<ul>
-  <li>
-<code>markly</code> (~&gt; 0.15) - cmark-gfm C library</li>
-  <li>
-<code>markdown-merge</code> (~&gt; 1.0) - central merge infrastructure</li>
-  <li>
-<code>version_gem</code> (~&gt; 1.1)</li>
-</ul>
-
-<h3 id="changed-1">Changed</h3>
-
-<ul>
-  <li>
-<strong>BackendRegistry Integration</strong>: Now uses <code>register_tag</code> instead of <code>register_availability_checker</code>
+  <li>Documentation on hostile takeover of RubyGems
     <ul>
-      <li>Registers with <code>require_path: "markly/merge"</code> enabling lazy loading</li>
-      <li>Tree_haver can now detect and load this backend without hardcoded knowledge</li>
-      <li>Supports fully dynamic tag system in tree_haver</li>
-    </ul>
-  </li>
-  <li>
-<strong>SmartMerger</strong>: Added <code>**options</code> for forward compatibility
-    <ul>
-      <li>Accepts additional options that may be added to base class in future</li>
-      <li>Passes all options through to <code>Markdown::Merge::SmartMerger</code>
-</li>
+      <li>https://dev.to/galtzo/hostile-takeover-of-rubygems-my-thoughts-5hlo</li>
     </ul>
   </li>
 </ul>
 
 <h3 id="security-1">Security</h3>
 
+<h4 id="dependencies">Dependencies</h4>
+
+<ul>
+  <li>appraisal2 (v3.0.6)</li>
+  <li>kettle-test (v1.0.10)</li>
+  <li>stone_checksums (v1.0.3)</li>
+  <li>
+<a href="https://github.com/kettle-rb/ast-merge/releases/tag/v4.0.6">ast-merge (v4.0.6)</a> - shared merge infrastructure</li>
+  <li>
+<a href="https://github.com/kettle-rb/tree_haver/releases/tag/v5.0.5">tree_haver (v5.0.5)</a> - normalized AST conventions</li>
+  <li>
+<a href="https://github.com/kettle-rb/markdown-merge/releases/tag/v1.0.3">markdown-merge (v1.0.3)</a> - central merge infrastructure for markdown</li>
+  <li>tree_stump (v0.2.0)</li>
+  <li>markly (~&gt; 0.15) - cmark-gfm C library</li>
+  <li>version_gem (~&gt; 1.1) - smart versions for libraries</li>
+</ul>
+
+<h3 id="security-2">Security</h3>
+
 </div></div>
 
       <div id="footer">
-  Generated on Sun Feb  1 23:45:27 2026 by
+  Generated on Thu Feb 19 07:21:43 2026 by
   <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
   0.9.38 (ruby-4.0.1).
 </div>
