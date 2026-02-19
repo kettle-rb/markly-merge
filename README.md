@@ -219,7 +219,7 @@ tree_haver supports multiple parsing backends, but not all backends work on all 
 [dotenv]: https://github.com/bkeepers/dotenv
 [rbs]: https://github.com/ruby/rbs
 [toml-rb]: https://github.com/emancu/toml-rb
-`[toml]: https://github.com/jm/toml
+[toml]: https://github.com/jm/toml
 [markly]: https://github.com/ioquatix/markly
 [commonmarker]: https://github.com/gjtorikian/commonmarker
 [ruby_tree_sitter]: https://github.com/Faveod/ruby-tree-sitter
