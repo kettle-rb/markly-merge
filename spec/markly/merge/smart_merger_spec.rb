@@ -1799,4 +1799,59 @@ RSpec.describe Markly::Merge::SmartMerger do
     # Line 278: when node lacks source position - fallback to to_html
     # This is hard to trigger with real Markly nodes
   end
+
+  describe "blank line handling between paragraph and list" do
+    it "does not insert blank lines between bold labels and their lists" do
+      pending "markdown merge inserts blank line between paragraph and tight list (AST rendering issue)"
+      markdown = <<~MD
+        **PREFERRED** - Use internal tools:
+        - `grep_search` instead of `grep` command
+        - `file_search` instead of `find` command
+        - `read_file` instead of `cat` command
+      MD
+
+      merger = described_class.new(markdown, markdown)
+      result = merger.merge
+
+      # The merge of identical content should not introduce blank lines
+      expect(result).not_to match(/internal tools:\n\n-/),
+        "Merge inserted a blank line between bold label and list:\n#{result}"
+    end
+
+    it "does not insert blank lines between label paragraphs and code blocks" do
+      markdown = <<~MD
+        **CORRECT** - Run commands:
+
+        ```bash
+        bundle exec rspec
+        ```
+      MD
+
+      merger = described_class.new(markdown, markdown)
+      result = merger.merge
+
+      # The blank line before the code block should remain exactly one (not doubled)
+      expect(result).not_to match(/commands:\n\n\n```/),
+        "Merge doubled the blank line between label and code block:\n#{result}"
+    end
+
+    it "preserves existing blank line structure in self-merge" do
+      markdown = <<~MD
+        # Section
+
+        Some paragraph text.
+
+        - List item 1
+        - List item 2
+      MD
+
+      merger = described_class.new(markdown, markdown)
+      result = merger.merge
+
+      # Self-merge should produce identical output
+      # Normalize trailing newlines for comparison
+      expect(result.strip).to eq(markdown.strip),
+        "Self-merge changed the content:\n--- expected ---\n#{markdown}\n--- got ---\n#{result}"
+    end
+  end
 end
