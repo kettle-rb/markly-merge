@@ -1801,8 +1801,7 @@ RSpec.describe Markly::Merge::SmartMerger do
   end
 
   describe "blank line handling between paragraph and list" do
-    it "does not insert blank lines between bold labels and their lists" do
-      pending "markdown merge inserts blank line between paragraph and tight list (AST rendering issue)"
+    it "does not insert blank line between bold label and unordered list" do
       markdown = <<~MD
         **PREFERRED** - Use internal tools:
         - `grep_search` instead of `grep` command
@@ -1813,12 +1812,83 @@ RSpec.describe Markly::Merge::SmartMerger do
       merger = described_class.new(markdown, markdown)
       result = merger.merge
 
-      # The merge of identical content should not introduce blank lines
       expect(result).not_to match(/internal tools:\n\n-/),
         "Merge inserted a blank line between bold label and list:\n#{result}"
     end
 
-    it "does not insert blank lines between label paragraphs and code blocks" do
+    it "does not insert blank line between plain text and unordered list" do
+      markdown = <<~MD
+        Only use terminal for:
+        - Running tests (`bundle exec rspec`)
+        - Installing dependencies (`bundle install`)
+        - Git operations that require interaction
+      MD
+
+      merger = described_class.new(markdown, markdown)
+      result = merger.merge
+
+      expect(result).not_to match(/terminal for:\n\n-/),
+        "Merge inserted a blank line between plain text and list:\n#{result}"
+    end
+
+    it "does not insert blank line between plain text and ordered list" do
+      markdown = <<~MD
+        To search inside vendor gems:
+        1. Use `read_file` to read specific files directly
+        2. Use `list_dir` to explore the directory structure
+        3. Do NOT rely on `grep_search`
+      MD
+
+      merger = described_class.new(markdown, markdown)
+      result = merger.merge
+
+      expect(result).not_to match(/vendor gems:\n\n1\./),
+        "Merge inserted a blank line between plain text and ordered list:\n#{result}"
+    end
+
+    it "does not insert blank line between bold label and code block" do
+      markdown = <<~MD
+        ✅ **WORKS** - Use these patterns:
+        ```
+        includePattern: "vendor/**"
+        ```
+      MD
+
+      merger = described_class.new(markdown, markdown)
+      result = merger.merge
+
+      expect(result).not_to match(/patterns:\n\n```/),
+        "Merge inserted a blank line between bold label and code block:\n#{result}"
+    end
+
+    it "does not insert blank line between single-word label and unordered list" do
+      markdown = <<~MD
+        Enforcement:
+        - CI and local builds may parse `.rbs` files during gem install
+      MD
+
+      merger = described_class.new(markdown, markdown)
+      result = merger.merge
+
+      expect(result).not_to match(/Enforcement:\n\n-/),
+        "Merge inserted a blank line between label and list:\n#{result}"
+    end
+
+    it "does not insert blank line between bold-colon label and unordered list" do
+      markdown = <<~MD
+        **Key insights:**
+        - `vendor/**` searches ALL files recursively
+        - Without `includePattern`, `grep_search` searches the ENTIRE workspace
+      MD
+
+      merger = described_class.new(markdown, markdown)
+      result = merger.merge
+
+      expect(result).not_to match(/insights:\*\*\n\n-/),
+        "Merge inserted a blank line between bold label and list:\n#{result}"
+    end
+
+    it "does not double blank lines between label paragraphs and code blocks" do
       markdown = <<~MD
         **CORRECT** - Run commands:
 
@@ -1830,7 +1900,6 @@ RSpec.describe Markly::Merge::SmartMerger do
       merger = described_class.new(markdown, markdown)
       result = merger.merge
 
-      # The blank line before the code block should remain exactly one (not doubled)
       expect(result).not_to match(/commands:\n\n\n```/),
         "Merge doubled the blank line between label and code block:\n#{result}"
     end
