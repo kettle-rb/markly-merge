@@ -24,30 +24,16 @@ module Markly
       # @return [String]
       DEFAULT_FREEZE_TOKEN = "markly-merge"
 
-      # Initialize file analysis with Markly backend.
-      #
-      # @param source [String] Markdown source code to analyze
-      # @param freeze_token [String] Token for freeze block markers (default: "markly-merge")
-      # @param signature_generator [Proc, nil] Custom signature generator
-      # @param flags [Integer] Markly parse flags (e.g., Markly::FOOTNOTES | Markly::SMART)
-      # @param extensions [Array<Symbol>] Markly extensions to enable (e.g., [:table, :strikethrough])
-      def initialize(source, freeze_token: DEFAULT_FREEZE_TOKEN, signature_generator: nil, flags: ::Markly::DEFAULT, extensions: [:table])
-        super(
-          source,
-          backend: :markly,
-          freeze_token: freeze_token,
-          signature_generator: signature_generator,
-          flags: flags,
-          extensions: extensions,
-        )
-      end
-
-      # Returns the FreezeNode class to use.
-      #
-      # @return [Class] Markly::Merge::FreezeNode
-      def freeze_node_class
-        FreezeNode
-      end
+      Markdown::Merge::WrapperSupport.configure_file_analysis_subclass!(
+        self,
+        default_backend: :markly,
+        default_parser_options: -> do
+          {
+            flags: ::Markly::DEFAULT,
+            extensions: [:table],
+          }
+        end,
+      )
     end
   end
 end

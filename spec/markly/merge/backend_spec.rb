@@ -66,6 +66,19 @@ RSpec.describe Markly::Merge::Backend do
         expect(lang.backend).to eq(:markly)
       end
     end
+
+    describe ".from_library" do
+      it "returns markdown language when no name is provided" do
+        lang = backend::Language.from_library
+        expect(lang.name).to eq(:markdown)
+        expect(lang.backend).to eq(:markly)
+      end
+
+      it "rejects non-markdown languages" do
+        expect { backend::Language.from_library(nil, name: :ruby) }
+          .to raise_error(TreeHaver::NotAvailable, /only supports Markdown/i)
+      end
+    end
   end
 
   describe "Parser", :markly_backend do
@@ -124,7 +137,7 @@ RSpec.describe Markly::Merge::Backend do
 
   describe "Node", :markly_backend do
     let(:parser) { backend::Parser.new.tap { |p| p.language = backend::Language.markdown } }
-    let(:source) { "# Hello World\n\nA paragraph with **bold** text." }
+    let(:source) { "# Hello World\n\n[link](https://example.com \"Example\")" }
     let(:tree) { parser.parse(source) }
     let(:root) { tree.root_node }
 
@@ -139,6 +152,39 @@ RSpec.describe Markly::Merge::Backend do
         children = root.children
         expect(children).to be_an(Array)
         expect(children).to all(be_a(backend::Node))
+      end
+    end
+
+    describe "shared navigation and metadata helpers" do
+      let(:heading) { root.children.first }
+      let(:paragraph) { root.children.last }
+      let(:link) { paragraph.children.find { |child| child.type == "link" } }
+
+      it "walks siblings and parents" do
+        expect(heading.next_sibling&.type).to eq("paragraph")
+        expect(paragraph.prev_sibling&.type).to eq("heading")
+        expect(paragraph.parent&.type).to eq("document")
+      end
+
+      it "exposes url and title for link nodes" do
+        expect(link.url).to eq("https://example.com")
+        expect(link.title).to eq("Example")
+      end
+    end
+
+    describe "shared heading/code-block helpers" do
+      let(:source) { "# Hello World\n\n```ruby\nputs :hi\n```" }
+      let(:tree) { parser.parse(source) }
+      let(:root) { tree.root_node }
+      let(:heading) { root.children.first }
+      let(:code_block) { root.children.last }
+
+      it "exposes heading level" do
+        expect(heading.header_level).to eq(1)
+      end
+
+      it "exposes fence info" do
+        expect(code_block.fence_info).to eq("ruby")
       end
     end
 

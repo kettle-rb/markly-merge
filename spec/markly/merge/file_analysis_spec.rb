@@ -211,6 +211,38 @@ RSpec.describe Markly::Merge::FileAnalysis do
     end
   end
 
+  describe "shared comment capability" do
+    let(:commented_markdown) do
+      <<~MARKDOWN
+        <!-- preamble -->
+
+        # Title
+
+        <!-- between sections -->
+
+        Paragraph text.
+
+        <!-- postlude -->
+      MARKDOWN
+    end
+
+    it "exposes standalone HTML comments through wrapper comment APIs" do
+      analysis = described_class.new(commented_markdown)
+
+      expect(analysis.comment_capability).to be_source_augmented if analysis.comment_capability.respond_to?(:source_augmented?)
+      expect(analysis.comment_nodes.map(&:line_number)).to eq([1, 5, 9])
+      expect(analysis.comment_node_at(5)&.text).to include("between sections")
+    end
+
+    it "builds leading attachments for structural statements through the wrapper" do
+      analysis = described_class.new(commented_markdown)
+      owner = analysis.statements.find { |stmt| stmt.merge_type == :heading }
+
+      attachment = analysis.comment_attachment_for(owner)
+      expect(attachment.leading_region.nodes.map(&:line_number)).to eq([1])
+    end
+  end
+
   describe "#line_at" do
     let(:source) { "# Title\n\nParagraph text.\n" }
     let(:analysis) { described_class.new(source) }

@@ -16,11 +16,11 @@ module Markly
     #
     # @see Ast::Merge::DebugLogger Base module
     module DebugLogger
-      extend Ast::Merge::DebugLogger
-
-      # Configure for markly-merge
-      self.env_var_name = "MARKLY_MERGE_DEBUG"
-      self.log_prefix = "[markly-merge]"
+      Markdown::Merge::WrapperSupport.configure_debug_logger!(
+        debug_logger_module: self,
+        env_var_name: "MARKLY_MERGE_DEBUG",
+        log_prefix: "[markly-merge]",
+      )
     end
   end
 end

@@ -1,0 +1,24 @@
+# frozen_string_literal: true
+
+require "spec_helper"
+
+RSpec.describe Markly::Merge::PartialTemplateMerger, :markly do
+  describe "standalone HTML comment fixture parity" do
+    let(:fixture_dir) { File.join(__dir__, "../../fixtures/reproducible/07_partial_replace_comments") }
+    let(:template) { File.read(File.join(fixture_dir, "template.md")) }
+    let(:destination) { File.read(File.join(fixture_dir, "destination.md")) }
+    let(:expected_result) { File.read(File.join(fixture_dir, "result.md")) }
+
+    it "preserves a between-block standalone HTML comment during replace_mode section replacement" do
+      result = described_class.new(
+        template: template,
+        destination: destination,
+        anchor: {type: :heading, text: /Description/},
+        preference: :template,
+        replace_mode: true,
+      ).merge
+
+      expect(result.content).to eq(expected_result)
+    end
+  end
+end

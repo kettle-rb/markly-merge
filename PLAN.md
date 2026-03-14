@@ -10,6 +10,7 @@ Adopt the shared Comment AST & Merge capability in `markly-merge` by inheriting 
 - The gem has the standard merge-gem layout and should mostly capture Markly-specific defaults and integration coverage.
 - Any substantial comment-region logic should be built in `markdown-merge` first.
 - This plan should remain small and parity-focused.
+- Wrapper passthrough for standalone HTML comment helpers and backend-specific parity fixtures is now in place.
 
 ## Integration Strategy
 - Wait for the Markdown-core comment capability to settle in `markdown-merge`.
@@ -51,6 +52,21 @@ Adopt the shared Comment AST & Merge capability in `markly-merge` by inheriting 
 - Phase 3 target.
 - Start only after the Markdown-core plan is stable enough to inherit.
 
+## Latest `ast-merge` Comment Logic Checklist (2026-03-13)
+- [x] Shared capability passthrough: expose Markdown-core-style `comment_capability` / `comment_augmenter` through wrapper entry points
+- [~] Document boundary parity: standalone HTML comment helper surface is exposed; broader ownership parity still remains
+- [x] Matched-node fallback parity: wrapper coverage now preserves destination standalone-comment fallback under template-preferred fuzzy paragraph matching
+- [x] Removed-node parity: wrapper replace-mode coverage now preserves standalone HTML comments during partial-template replacement
+- [x] Backend parity fixtures: focused Markly wrapper regressions are in place for matched-node and replace-mode standalone-comment preservation
+
+Current parity status: focused wrapper parity is validated end-to-end; local workspace gem wiring now also follows the shared `nomono` path-override pattern used by sibling repos. Broader Markdown-family consolidation still remains.
+Next execution target: keep future work narrow to true Markly-specific ownership/range gaps or shared-core consolidation rather than wrapper bootstrap repair.
+
+## Progress
+- 2026-03-13: Wrapper-thinning consolidation completed.
+- Replaced the duplicated local standalone HTML `CommentTracker`, wrapper-local file-analysis comment passthrough methods, and wrapper-local replace-mode standalone-comment helper overrides in `PartialTemplateMerger` with direct reuse of the shared Markdown-core implementations.
+- Revalidated `spec/markly/merge_spec.rb`, `spec/markly/merge/file_analysis_spec.rb`, `spec/markly/merge/partial_template_merger_integration_spec.rb`, and `spec/markly/merge/smart_merger_partial_template_merge_integration_spec.rb`, then revalidated the full `markly-merge` suite in sibling workspace mode under `KETTLE_RB_DEV=/home/pboling/src/kettle-rb` (`101 examples, 0 failures, 1 pending` focused; `11 examples, 0 failures` partial-template rerun; `522 examples, 0 failures, 1 pending` full).
+
 ## Execution Backlog
 
 ### Slice 1 — Wrapper passthrough
@@ -68,7 +84,7 @@ Adopt the shared Comment AST & Merge capability in `markly-merge` by inheriting 
 - Add only small targeted regressions where Markly behavior differs materially.
 
 ## Dependencies / Resume Notes
-- Do not start here until `vendor/markdown-merge/PLAN.md` Slice 2 is stable.
+- Do not start here until sibling `markdown-merge/PLAN.md` Slice 2 is stable.
 - Inspect `lib/markly/merge/file_analysis.rb` and wrapper integration specs first.
 - Favor parity with `markdown-merge` over bespoke wrapper behavior.
 

@@ -202,6 +202,46 @@ RSpec.describe Markly::Merge::SmartMerger do
       end
     end
 
+    context "with template-preferred fuzzy paragraph matching and standalone HTML comments" do
+      let(:template) do
+        <<~MARKDOWN
+          # Title
+
+          This is the canonical project description.
+        MARKDOWN
+      end
+
+      let(:destination) do
+        <<~MARKDOWN
+          # Title
+
+          <!-- Destination docs -->
+
+          This is the canoncal project description.
+        MARKDOWN
+      end
+
+      it "preserves destination standalone HTML comment docs when template content wins" do
+        merger = described_class.new(
+          template,
+          destination,
+          preference: :template,
+          match_refiner: Ast::Merge::ContentMatchRefiner.new(
+            threshold: 0.8,
+            node_types: [:paragraph],
+          ),
+        )
+
+        expect(merger.merge).to eq(<<~MARKDOWN)
+          # Title
+
+          <!-- Destination docs -->
+
+          This is the canonical project description.
+        MARKDOWN
+      end
+    end
+
     context "with destination-only sections" do
       let(:template) { "# Title" }
       let(:destination) do

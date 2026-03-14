@@ -392,8 +392,8 @@ RSpec.describe Markly::Merge::FreezeNode do
   end
 
   describe "inheritance" do
-    it "inherits from Markdown::Merge::FreezeNode" do
-      expect(described_class.superclass).to eq(Markdown::Merge::FreezeNode)
+    it "reuses Markdown::Merge::FreezeNode" do
+      expect(described_class).to eq(Markdown::Merge::FreezeNode)
     end
   end
 

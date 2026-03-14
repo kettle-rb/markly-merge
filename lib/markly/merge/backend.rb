@@ -20,53 +20,15 @@ module Markly
     #   root = tree.root_node
     #   puts root.type  # => "document"
     module Backend
-      @load_attempted = false # rubocop:disable ThreadSafety/ClassInstanceVariable
-      @loaded = false # rubocop:disable ThreadSafety/ClassInstanceVariable
-
-      # Check if the Markly backend is available
-      #
-      # @return [Boolean] true if markly gem is available
-      class << self
-        def available?
-          return @loaded if @load_attempted # rubocop:disable ThreadSafety/ClassInstanceVariable
-          @load_attempted = true # rubocop:disable ThreadSafety/ClassInstanceVariable
-          begin
-            require "markly"
-            @loaded = true # rubocop:disable ThreadSafety/ClassInstanceVariable
-          rescue LoadError
-            @loaded = false # rubocop:disable ThreadSafety/ClassInstanceVariable
-          rescue StandardError
-            @loaded = false # rubocop:disable ThreadSafety/ClassInstanceVariable
-          end
-          @loaded # rubocop:disable ThreadSafety/ClassInstanceVariable
-        end
-
-        # Reset the load state (primarily for testing)
-        #
-        # @return [void]
-        # @api private
-        def reset!
-          @load_attempted = false # rubocop:disable ThreadSafety/ClassInstanceVariable
-          @loaded = false # rubocop:disable ThreadSafety/ClassInstanceVariable
-        end
-
-        # Get capabilities supported by this backend
-        #
-        # @return [Hash{Symbol => Object}] capability map
-        def capabilities
-          return {} unless available?
-          {
-            backend: :markly,
-            query: false,
-            bytes_field: false,       # Markly uses line/column
-            incremental: false,
-            pure_ruby: false,         # Uses C via FFI
-            markdown_only: true,
-            error_tolerant: true,     # Markdown is forgiving
-            gfm_extensions: true,     # Supports GitHub Flavored Markdown
-          }
-        end
-      end
+      Markdown::Merge::BackendSupport.install!(
+        backend_module: self,
+        backend_name: :markly,
+        gem_name: "markly",
+        require_path: "markly/merge",
+        capabilities: {
+          gfm_extensions: true,
+        },
+      )
 
       # Markly language wrapper
       #
@@ -124,18 +86,16 @@ module Markly
           # @param name [String, nil] Language name hint (defaults to :markdown)
           # @return [Language] Markdown language
           # @raise [TreeHaver::NotAvailable] if requested language is not Markdown
-          def from_library(_path = nil, symbol: nil, name: nil)
-            lang_name = name || symbol&.to_s&.sub(/^tree_sitter_/, "")&.to_sym || :markdown
-
-            unless lang_name == :markdown
-              raise TreeHaver::NotAvailable,
-                "Markly backend only supports Markdown, not #{lang_name}. " \
-                  "Use a tree-sitter backend for #{lang_name} support."
-            end
-
-            markdown
-          end
         end
+
+        Markdown::Merge::BackendSupport.configure_markdown_only_language_class!(
+          self,
+          backend_label: "Markly",
+          unsupported_language_message: ->(lang_name) {
+            "Markly backend only supports Markdown, not #{lang_name}. " \
+              "Use a tree-sitter backend for #{lang_name} support."
+          },
+        )
       end
 
       # Markly parser wrapper
@@ -184,21 +144,6 @@ module Markly
         end
       end
 
-      # Markly tree wrapper
-      #
-      # Wraps Markly parse results to provide tree-sitter-compatible API.
-      #
-      # @api private
-      class Tree < ::TreeHaver::Base::Tree
-        def initialize(document, source)
-          super(document, source: source)
-        end
-
-        def root_node
-          Node.new(inner_tree, source: source, lines: lines)
-        end
-      end
-
       # Markly node wrapper
       #
       # Wraps Markly::Node to provide TreeHaver::Node-compatible interface.
@@ -209,6 +154,17 @@ module Markly
           hrule: "thematic_break",
           html: "html_block",
         }.freeze
+
+        Markdown::Merge::BackendSupport.configure_node_link_and_navigation!(
+          self,
+          next_sibling_selector: :next,
+          prev_sibling_selector: :previous,
+        )
+        Markdown::Merge::BackendSupport.configure_node_heading_and_code_block_helpers!(
+          self,
+          heading_matcher: ->(node) { node.raw_type == "header" },
+          code_block_matcher: ->(node) { node.type == "code_block" },
+        )
 
         # Default source position for nodes that don't have position info
         DEFAULT_SOURCE_POSITION = {
@@ -326,97 +282,9 @@ module Markly
 
         # Markly-specific methods
 
-        # Get heading level (1-6)
-        # @return [Integer, nil]
-        def header_level
-          return unless raw_type == "header"
-          begin
-            inner_node.header_level
-          rescue
-            nil
-          end
-        end
 
-        # Get fence info for code blocks
-        # @return [String, nil]
-        def fence_info
-          return unless type == "code_block"
-          begin
-            inner_node.fence_info
-          rescue
-            nil
-          end
-        end
-
-        # Get URL for links/images
-        # @return [String, nil]
-        def url
-          inner_node.url
-        rescue
-          nil
-        end
-
-        # Get title for links/images
-        # @return [String, nil]
-        def title
-          inner_node.title
-        rescue
-          nil
-        end
-
-        # Get the next sibling (Markly uses .next)
-        # @return [Node, nil]
-        def next_sibling
-          sibling = begin
-            inner_node.next
-          rescue
-            nil
-          end
-          sibling ? Node.new(sibling, source: source, lines: lines) : nil
-        end
-
-        # Get the previous sibling
-        # @return [Node, nil]
-        def prev_sibling
-          sibling = begin
-            inner_node.previous
-          rescue
-            nil
-          end
-          sibling ? Node.new(sibling, source: source, lines: lines) : nil
-        end
-
-        # Get the parent node
-        # @return [Node, nil]
-        def parent
-          p = begin
-            inner_node.parent
-          rescue
-            nil
-          end
-          p ? Node.new(p, source: source, lines: lines) : nil
-        end
       end
 
-      # Alias Point to the base class for compatibility
-      Point = ::TreeHaver::Base::Point
-
-      # Register this backend with TreeHaver
-      ::TreeHaver.register_language(
-        :markdown,
-        backend_type: :markly,
-        backend_module: self,
-        gem_name: "markly",
-      )
-
-      # Register the full tag for RSpec dependency tags with require path
-      # This enables tree_haver to lazily load this gem when checking availability
-      ::TreeHaver::BackendRegistry.register_tag(
-        :markly_backend,
-        category: :backend,
-        backend_name: :markly,
-        require_path: "markly/merge",
-      ) { available? }
     end
   end
 end
