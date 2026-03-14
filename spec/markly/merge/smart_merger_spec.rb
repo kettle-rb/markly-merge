@@ -240,6 +240,168 @@ RSpec.describe Markly::Merge::SmartMerger do
           This is the canonical project description.
         MARKDOWN
       end
+
+      it "preserves destination link reference definitions alongside destination standalone HTML comments when template content wins" do
+        template_with_link_ref = <<~MARKDOWN
+          # Title
+
+          This is the canonical project description with [Docs][docs].
+        MARKDOWN
+
+        destination_with_link_ref = <<~MARKDOWN
+          # Title
+
+          <!-- Destination docs -->
+
+          [docs]: https://example.test/docs
+
+          This is the canoncal project description with [Docs][docs].
+        MARKDOWN
+
+        merger = described_class.new(
+          template_with_link_ref,
+          destination_with_link_ref,
+          preference: :template,
+          match_refiner: Ast::Merge::ContentMatchRefiner.new(
+            threshold: 0.8,
+            node_types: [:paragraph],
+          ),
+        )
+
+        result = merger.merge_result
+
+        expect(result.content).to eq(<<~MARKDOWN)
+          # Title
+
+          <!-- Destination docs -->
+
+          [docs]: https://example.test/docs
+
+          This is the canonical project description with [Docs][docs].
+        MARKDOWN
+        expect(result.stats).to include(nodes_modified: 1)
+      end
+
+      it "preserves a destination-owned consumed link reference definition when a kept template-only paragraph still needs it after removal mode deletes legacy content" do
+        template_with_link_ref = <<~MARKDOWN
+          # Title
+
+          This is the canonical project description with [Docs][docs].
+        MARKDOWN
+
+        destination_with_legacy_link_ref = <<~MARKDOWN
+          # Title
+
+          ## Legacy
+
+          Legacy notes.
+
+          [docs]: https://example.test/docs
+        MARKDOWN
+
+        merger = described_class.new(
+          template_with_link_ref,
+          destination_with_legacy_link_ref,
+          preference: :template,
+          add_template_only_nodes: true,
+          remove_template_missing_nodes: true,
+        )
+
+        result = merger.merge_result
+
+        expect(result.content).to eq(<<~MARKDOWN)
+          # Title
+
+          [docs]: https://example.test/docs
+
+          This is the canonical project description with [Docs][docs].
+        MARKDOWN
+        expect(result.stats).to include(
+          nodes_added: 1,
+          nodes_removed: 2,
+          nodes_modified: 0,
+        )
+      end
+
+      it "does not preserve definition-like lines from removed fenced code blocks" do
+        template_with_link_ref = <<~MARKDOWN
+          # Title
+
+          This is the canonical project description with [Docs][docs].
+        MARKDOWN
+
+        destination_with_code_example = <<~MARKDOWN
+          # Title
+
+          ## Legacy
+
+          ```md
+          [docs]: https://example.test/docs
+          ```
+        MARKDOWN
+
+        merger = described_class.new(
+          template_with_link_ref,
+          destination_with_code_example,
+          preference: :template,
+          add_template_only_nodes: true,
+          remove_template_missing_nodes: true,
+        )
+
+        result = merger.merge_result
+
+        expect(result.content).to eq(<<~MARKDOWN)
+          # Title
+
+          This is the canonical project description with [Docs][docs].
+        MARKDOWN
+        expect(result.stats).to include(
+          nodes_added: 1,
+          nodes_removed: 2,
+          nodes_modified: 0,
+        )
+        expect(result.stats).not_to include(:preserved_destination_link_definitions)
+      end
+
+      it "preserves only the first destination link definition for a duplicate label" do
+        template_with_link_ref = <<~MARKDOWN
+          # Title
+
+          This is the canonical project description with [Docs][docs].
+        MARKDOWN
+
+        destination_with_duplicate_link_defs = <<~MARKDOWN
+          # Title
+
+          ## Legacy
+
+          [docs]: https://example.test/first
+          [docs]: https://example.test/second
+        MARKDOWN
+
+        merger = described_class.new(
+          template_with_link_ref,
+          destination_with_duplicate_link_defs,
+          preference: :template,
+          add_template_only_nodes: true,
+          remove_template_missing_nodes: true,
+        )
+
+        result = merger.merge_result
+
+        expect(result.content).to eq(<<~MARKDOWN)
+          # Title
+
+          [docs]: https://example.test/first
+
+          This is the canonical project description with [Docs][docs].
+        MARKDOWN
+        expect(result.stats).to include(
+          nodes_added: 1,
+          nodes_removed: 1,
+          nodes_modified: 0,
+        )
+      end
     end
 
     context "with destination-only sections" do
@@ -259,6 +421,119 @@ RSpec.describe Markly::Merge::SmartMerger do
         result = merger.merge_result
         expect(result.content).to include("Custom Section")
         expect(result.content).to include("Custom content")
+      end
+
+      it "removes destination-only structural sections while preserving standalone HTML comment docs when removal mode is enabled" do
+        destination_with_comment = <<~MARKDOWN
+          # Title
+
+          <!-- Destination docs -->
+
+          ## Custom Section
+
+          Custom content.
+        MARKDOWN
+
+        merger = described_class.new(template, destination_with_comment, remove_template_missing_nodes: true)
+
+        expect(merger.merge).to eq(<<~MARKDOWN)
+          # Title
+
+          <!-- Destination docs -->
+        MARKDOWN
+      end
+
+      it "preserves destination-only link reference definitions when removal mode is enabled" do
+        destination_with_link_ref = <<~MARKDOWN
+          # Title
+
+          [ref]: https://example.com/docs
+
+          ## Custom Section
+
+          Custom content.
+        MARKDOWN
+
+        merger = described_class.new(template, destination_with_link_ref, remove_template_missing_nodes: true)
+
+        expect(merger.merge).to eq(<<~MARKDOWN)
+          # Title
+
+          [ref]: https://example.com/docs
+        MARKDOWN
+      end
+
+      it "preserves destination-only freeze blocks when removal mode is enabled" do
+        destination_with_freeze = <<~MARKDOWN
+          # Title
+
+          <!-- markly-merge:freeze -->
+          Frozen content.
+          <!-- markly-merge:unfreeze -->
+
+          ## Custom Section
+
+          Custom content.
+        MARKDOWN
+
+        merger = described_class.new(template, destination_with_freeze, remove_template_missing_nodes: true)
+
+        result = merger.merge
+
+        expect(result).to include("<!-- markly-merge:freeze -->")
+        expect(result).to include("Frozen content.")
+        expect(result).to include("<!-- markly-merge:unfreeze -->")
+        expect(result).not_to include("Custom content.")
+      end
+
+      it "preserves a separator blank line before a trailing standalone HTML comment after removed structural content" do
+        paragraph_template = <<~MARKDOWN
+          Intro
+        MARKDOWN
+
+        destination_with_trailing_comment = <<~MARKDOWN
+          Intro
+
+          Legacy content.
+
+          <!-- trailing docs -->
+        MARKDOWN
+
+        merger = described_class.new(paragraph_template, destination_with_trailing_comment, remove_template_missing_nodes: true)
+
+        expect(merger.merge).to eq(<<~MARKDOWN)
+          Intro
+
+          <!-- trailing docs -->
+        MARKDOWN
+      end
+
+      it "preserves standalone HTML orphan docs between removed structural content and a later kept paragraph" do
+        paragraph_template = <<~MARKDOWN
+          Intro
+
+          Kept tail.
+        MARKDOWN
+
+        destination_with_orphan_comment = <<~MARKDOWN
+          Intro
+
+          Legacy content.
+
+          <!-- orphan docs -->
+
+          Kept tail.
+        MARKDOWN
+
+        merger = described_class.new(paragraph_template, destination_with_orphan_comment, remove_template_missing_nodes: true)
+
+        expect(merger.merge).to eq(<<~MARKDOWN)
+          Intro
+
+          <!-- orphan docs -->
+
+          Kept tail.
+        MARKDOWN
       end
     end
 

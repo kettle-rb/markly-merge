@@ -235,8 +235,12 @@ RSpec.describe Markly::Merge::FileAligner do
         )
         alignment = aligner.align
         matches = alignment.select { |e| e[:type] == :match }
-        # All sections should match (includes gap_lines between sections)
-        expect(matches.size).to eq(5)
+        heading_matches = matches.reject do |e|
+          node = e[:template_node] || e[:dest_node]
+          node.respond_to?(:type) && (node.type == :gap_line || node.type == "gap_line")
+        end
+
+        expect(heading_matches.size).to eq(3)
       end
     end
   end

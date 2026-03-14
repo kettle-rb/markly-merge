@@ -20,13 +20,21 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
+- Documented the inherited `markdown-merge` full-document `remove_template_missing_nodes: true` contract in the wrapper README and plan, including preserved standalone HTML comment-only fragments, link reference definitions, freeze blocks, and separator-boundary stability around kept standalone fragments.
+- Documented the inherited Markdown comment-ownership rollout for standalone HTML comment boundaries, matched-node fallback, partial-template link-definition preservation, and full-document fuzzy smart-merger parity through the thin wrapper.
+- Added focused wrapper parity coverage for inherited removal-mode follow-ups covering destination-owned consumed link definitions that outlive removed legacy blocks, skipped fenced-code / HTML literal false positives, and preservation of only the first effective duplicate destination label.
+
 ### Changed
+
+- Clarified that `markly-merge` keeps partial-template `replace_mode` behavior separate from the shared top-level-only removal-mode contract and continues to defer generic inline-comment promotion plus recursive/nested removal semantics.
+- Clarified that broader removal-mode link-definition ownership, literal-context false-positive suppression, and duplicate-label normalization are all inherited from `markdown-merge` rather than wrapper-local logic.
 
 ### Deprecated
 
 ### Removed
 
 ### Fixed
+
 
 ### Security
 
