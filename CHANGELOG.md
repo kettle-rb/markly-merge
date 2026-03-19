@@ -20,9 +20,10 @@ Please file a bug if you notice a violation of semantic versioning.
 
 ### Added
 
-- Documented the inherited `markdown-merge` full-document `remove_template_missing_nodes: true` contract in the wrapper README and plan, including preserved standalone HTML comment-only fragments, link reference definitions, freeze blocks, and separator-boundary stability around kept standalone fragments.
+ - Documented the inherited `markdown-merge` full-document `remove_template_missing_nodes: true` contract in the wrapper README, including preserved standalone HTML comment-only fragments, link reference definitions, freeze blocks, and separator-boundary stability around kept standalone fragments.
 - Documented the inherited Markdown comment-ownership rollout for standalone HTML comment boundaries, matched-node fallback, partial-template link-definition preservation, and full-document fuzzy smart-merger parity through the thin wrapper.
 - Added focused wrapper parity coverage for inherited removal-mode follow-ups covering destination-owned consumed link definitions that outlive removed legacy blocks, skipped fenced-code / HTML literal false positives, and preservation of only the first effective duplicate destination label.
+- Added wrapper-parity shared layout compliance coverage so inherited Markdown block-gap ownership now follows the shared `Ast::Merge::Layout` contract through the Markly wrapper.
 
 ### Changed
 
