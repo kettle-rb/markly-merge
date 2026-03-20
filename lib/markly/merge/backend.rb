@@ -281,10 +281,7 @@ module Markly
         end
 
         # Markly-specific methods
-
-
       end
-
     end
   end
 end

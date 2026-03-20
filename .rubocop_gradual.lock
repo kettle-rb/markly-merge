@@ -1,0 +1,11 @@
+{
+  "Gemfile:233378226": [
+    [11, 1, 386, "Style/InvertibleUnlessCondition: Prefer `if ENV.fetch(\"KETTLE_RB_DEV\", \"false\").casecmp(\"false\").nonzero?` over `unless ENV.fetch(\"KETTLE_RB_DEV\", \"false\").casecmp(\"false\").zero?`.", 2787977]
+  ],
+  "gemfiles/modular/tree_sitter.gemfile:3740467699": [
+    [19, 1, 112, "Style/InvertibleUnlessCondition: Prefer `if ENV.fetch(\"KETTLE_RB_DEV\", \"false\").casecmp(\"false\").nonzero?` over `unless ENV.fetch(\"KETTLE_RB_DEV\", \"false\").casecmp(\"false\").zero?`.", 2718008714]
+  ],
+  "spec/markly/merge/removal_mode_compliance_spec.rb:983810442": [
+    [6, 1, 41, "RSpec/SpecFilePathFormat: Spec path should end with `markly/merge/smart_merger*_spec.rb`.", 3859641242]
+  ]
+}

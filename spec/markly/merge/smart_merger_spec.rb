@@ -435,12 +435,17 @@ RSpec.describe Markly::Merge::SmartMerger do
         MARKDOWN
 
         merger = described_class.new(template, destination_with_comment, remove_template_missing_nodes: true)
+        result = merger.merge_result
 
-        expect(merger.merge).to eq(<<~MARKDOWN)
+        expect(result.content).to eq(<<~MARKDOWN)
           # Title
 
           <!-- Destination docs -->
         MARKDOWN
+        expect(result.stats).to include(
+          nodes_removed: 2,
+          preserved_destination_comment_fragments: 1,
+        )
       end
 
       it "preserves destination-only link reference definitions when removal mode is enabled" do

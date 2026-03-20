@@ -42,7 +42,6 @@ module Markly
   # @see SmartMerger Main entry point for merging
   # @see Markdown::Merge::SmartMerger Underlying implementation
   module Merge
-
     Markdown::Merge::WrapperSupport.install!(
       wrapper_module: self,
       require_prefix: "markly/merge",
@@ -56,7 +55,6 @@ end
 
 # Ensure backend is loaded and registered
 Markly::Merge.ensure_backend_loaded!
-
 
 Markly::Merge::Version.class_eval do
   extend VersionGem::Basic
