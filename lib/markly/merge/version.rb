@@ -5,7 +5,7 @@ module Markly
     # Version information for Markly::Merge
     module Version
       # Current version of the markly-merge gem
-      VERSION = "1.0.0"
+      VERSION = "2.0.0"
     end
     VERSION = Version::VERSION # traditional location
   end
