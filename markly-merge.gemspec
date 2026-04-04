@@ -1,16 +1,22 @@
 # coding: utf-8
 # frozen_string_literal: true
 
+# kettle-jem:freeze
+# To retain chunks of comments & code during markly-merge templating:
+# Wrap custom sections with freeze markers (e.g., as above and below this comment chunk).
+# markly-merge will then preserve content between those markers across template runs.
+# kettle-jem:unfreeze
+
 Gem::Specification.new do |spec|
   spec.name = "markly-merge"
   spec.version = Module.new.tap { |mod| Kernel.load("#{__dir__}/lib/markly/merge/version.rb", mod) }::Markly::Merge::Version::VERSION
   spec.authors = ["Peter H. Boling"]
   spec.email = ["floss@galtzo.com"]
 
-  spec.summary = "☯️ Intelligent Markdown file merging using Markly AST analysis"
-  spec.description = "☯️ Markly::Merge provides smart Markdown file merging using libcmark-gfm via Markly. It understands document structure including headings, lists, code blocks, and tables. Perfect for merging documentation templates with customized files."
+  spec.summary = "🍲 Intelligent Markdown file merging using Markly AST analysis"
+  spec.description = "🍲 Markly::Merge provides smart Markdown file merging using libcmark-gfm via Markly. It understands document structure including headings, lists, code blocks, and tables. Perfect for merging documentation templates with customized files."
   spec.homepage = "https://github.com/kettle-rb/markly-merge"
-  spec.licenses = ["MIT"]
+  spec.licenses = ["AGPL-3.0-only", "PolyForm-Small-Business-1.0.0", "LicenseRef-Big-Time-Public-License"]
   spec.required_ruby_version = ">= 3.2.0"
 
   # Linux distros often package gems and securely certify them independent
@@ -31,7 +37,7 @@ Gem::Specification.new do |spec|
     end
   end
 
-  spec.metadata["homepage_uri"] = "https://#{spec.name.tr("_", "-")}.galtzo.com/"
+  spec.metadata["homepage_uri"] = "https://markly-merge.galtzo.com/"
   spec.metadata["source_code_uri"] = "#{spec.homepage}/tree/v#{spec.version}"
   spec.metadata["changelog_uri"] = "#{spec.homepage}/blob/v#{spec.version}/CHANGELOG.md"
   spec.metadata["bug_tracker_uri"] = "#{spec.homepage}/issues"
@@ -110,10 +116,10 @@ Gem::Specification.new do |spec|
   #       and preferably a modular one (see gemfiles/modular/*.gemfile).
 
   # Dev, Test, & Release Tasks
-  spec.add_development_dependency("kettle-dev", "~> 2.0")                           # ruby >= 2.3.0
+  spec.add_development_dependency("kettle-dev", "~> 2.0")                  # ruby >= 2.3.0
 
   # Security
-  spec.add_development_dependency("bundler-audit", "~> 0.9.2")                      # ruby >= 2.0.0
+  spec.add_development_dependency("bundler-audit", "~> 0.9.3")                      # ruby >= 2.0.0
 
   # Tasks
   spec.add_development_dependency("rake", "~> 13.0")                                # ruby >= 2.2.0
@@ -122,12 +128,12 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency("require_bench", "~> 1.0", ">= 1.0.4")            # ruby >= 2.2.0
 
   # Testing
-  spec.add_development_dependency("appraisal2", "~> 3.0")                           # ruby >= 1.8.7, for testing against multiple versions of dependencies
-  spec.add_development_dependency("kettle-test", "~> 1.0", ">= 1.0.6")              # ruby >= 2.3
+  spec.add_development_dependency("appraisal2", "~> 3.0", ">= 3.0.6")               # ruby >= 1.8.7, for testing against multiple versions of dependencies
+  spec.add_development_dependency("kettle-test", "~> 1.0", ">= 1.0.10")              # ruby >= 2.3
 
   # Releasing
   spec.add_development_dependency("ruby-progressbar", "~> 1.13")                    # ruby >= 0
-  spec.add_development_dependency("stone_checksums", "~> 1.0", ">= 1.0.2")          # ruby >= 2.2.0
+  spec.add_development_dependency("stone_checksums", "~> 1.0", ">= 1.0.3")          # ruby >= 2.2.0
 
   # Git integration (optional)
   # The 'git' gem is optional; markly-merge falls back to shelling out to `git` if it is not present.
