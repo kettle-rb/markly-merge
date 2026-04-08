@@ -13,8 +13,8 @@ Gem::Specification.new do |spec|
   spec.authors = ["Peter H. Boling"]
   spec.email = ["floss@galtzo.com"]
 
-  spec.summary = "🍲 Intelligent Markdown file merging using Markly AST analysis"
-  spec.description = "🍲 Markly::Merge provides smart Markdown file merging using libcmark-gfm via Markly. It understands document structure including headings, lists, code blocks, and tables. Perfect for merging documentation templates with customized files."
+  spec.summary = "☯️ Intelligent Markdown file merging using Markly AST analysis"
+  spec.description = "☯️ Markly::Merge provides smart Markdown file merging using libcmark-gfm via Markly. It understands document structure including headings, lists, code blocks, and tables. Perfect for merging documentation templates with customized files."
   spec.homepage = "https://github.com/kettle-rb/markly-merge"
   spec.licenses = ["AGPL-3.0-only"]
   spec.required_ruby_version = ">= 3.2.0"
