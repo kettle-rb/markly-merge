@@ -53,6 +53,17 @@ I've summarized my thoughts in [this blog post](https://dev.to/galtzo/hostile-ta
       - `flags` - Markly parse flags (e.g., `Markly::FOOTNOTES`, `Markly::SMART`)
       - `extensions` - GFM extensions (`:table`, `:strikethrough`, `:autolink`, `:tagfilter`, `:tasklist`)
 
+### Removal Mode Scope
+
+`remove_template_missing_nodes: true` in `markly-merge` currently follows the shared `markdown-merge` full-document contract:
+
+- removes **top-level destination-only structural blocks**
+- preserves **standalone HTML comment-only fragments**, **link reference definitions**, and **freeze blocks**
+- preserves **one separator blank line** when removed structural content collapses around a kept standalone HTML comment fragment
+- does **not** yet define generic inline-comment promotion or recursive/nested section-removal semantics
+
+Section-local `replace_mode` / partial-template behavior still follows its own conservative Markdown rules and should not be assumed to inherit the same recursive removal contract as full-document smart merge.
+
 ### Supported Node Types
 
 | Node Type      | Signature Format                | Matching Behavior                                  |
@@ -378,13 +389,13 @@ require "markly/merge"
 template = <<~MD
   # My Project
 
-  ## Installation
+  ## How to Install
 
   Run `gem install my-project`.
 
-  ## Usage
+  ## How to Use
 
-  Basic usage instructions.
+  Instructions here.
 
   ## Contributing
 
@@ -395,7 +406,7 @@ MD
 destination = <<~MD
   # My Project
 
-  ## Installation
+  ## How to Install
 
   Use bundler for better dependency management:
 
@@ -419,6 +430,45 @@ Freeze blocks protect sections from being overwritten during merge:
 
 ````markdown
 # My Project
+
+## How to Install
+
+<!-- markly-merge:freeze Custom install instructions -->
+This installation section has been customized and will be preserved
+during template merges, regardless of what the template contains.
+<!-- markly-merge:unfreeze -->
+
+## How to Use
+
+Standard usage section from template.
+````
+
+Content between `<!-- markly-merge:freeze -->` and `<!-- markly-merge:unfreeze -->` markers is preserved from the destination file.
+
+### Adding Template-Only Sections
+
+```ruby
+merger = Markly::Merge::SmartMerger.new(
+  template,
+  destination,
+  add_template_only_nodes: true,
+)
+result = merger.merge
+# Result includes sections from template that don't exist in destination
+```
+
+### Freeze Blocks
+
+Freeze blocks protect sections from being modified during merges. They are marked
+with HTML comments that are invisible when the Markdown is rendered:
+
+```markdown
+<!-- markdown-merge:freeze -->
+
+# Some Markdown in here!
+
+<!-- markdown-merge:unfreeze -->
+```
 
 ## 🦷 FLOSS Funding
 
