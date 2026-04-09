@@ -448,12 +448,19 @@ RSpec.describe Markly::Merge::FileAnalysis do
       let(:source) { "# Level 1\n\n## Level 2" }
       let(:analysis) { described_class.new(source) }
 
-      it "includes heading type, level, and text" do
+      it "H1 signature is a singleton (type and level only, no text)" do
         sig = analysis.signature_at(0)
+        # H1 is the document title — treated as a singleton by design.
         # Signatures use canonical type :heading (normalized from Markly's :header)
+        expect(sig).to eq([:heading, 1])
+      end
+
+      it "H2+ signature includes heading type, level, and text" do
+        # Index 1 is the gap_line between H1 and H2; H2 is at index 2
+        sig = analysis.signature_at(2)
         expect(sig).to include(:heading)
-        expect(sig).to include(1) # heading level
-        expect(sig).to include("Level 1") # heading text
+        expect(sig).to include(2)
+        expect(sig).to include("Level 2")
       end
     end
 
