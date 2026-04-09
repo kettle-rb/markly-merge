@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+# rubocop:disable RSpec/SpecFilePathFormat
+
 require "spec_helper"
 require "ast/merge/rspec/shared_examples"
 
@@ -57,3 +59,5 @@ RSpec.describe Markly::Merge::SmartMerger do
     end
   end
 end
+
+# rubocop:enable RSpec/SpecFilePathFormat
