@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>
+  File: CHANGELOG
+  
+    &mdash; Documentation by YARD 0.9.39
+  
+</title>
+
+  <link rel="stylesheet" href="css/style.css" type="text/css" />
+
+  <link rel="stylesheet" href="css/common.css" type="text/css" />
+
+<script type="text/javascript">
+  pathId = "CHANGELOG";
+  relpath = '';
+</script>
+
+
+  <script type="text/javascript" charset="utf-8" src="js/jquery.js"></script>
+
+  <script type="text/javascript" charset="utf-8" src="js/app.js"></script>
+
+
+  </head>
+  <body>
+    <div class="nav_wrap">
+      <iframe id="nav" src="file_list.html?1"></iframe>
+      <div id="resizer"></div>
+    </div>
+
+    <div id="main" tabindex="-1">
+      <div id="header">
+        <div id="menu">
+  
+    <a href="_index.html">Index</a> &raquo; 
+    <span class="title">File: CHANGELOG</span>
+  
+</div>
+
+        <div id="search">
+  
+    <a class="full_list_link" id="class_list_link"
+        href="class_list.html">
+
+        <svg width="24" height="24">
+          <rect x="0" y="4" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="12" width="24" height="4" rx="1" ry="1"></rect>
+          <rect x="0" y="20" width="24" height="4" rx="1" ry="1"></rect>
+        </svg>
+    </a>
+  
+</div>
+        <div class="clear"></div>
+      </div>
+
+      <div id="content"><div id='filecontents'><h1 id="changelog">Changelog</h1>
+
+<p><a href="https://semver.org/spec/v2.0.0.html"><img src="https://img.shields.io/badge/semver-2.0.0-FFDD67.svg?style=flat" alt="SemVer 2.0.0"></a> <a href="https://keepachangelog.com/en/1.0.0/"><img src="https://img.shields.io/badge/keep--a--changelog-1.0.0-FFDD67.svg?style=flat" alt="Keep-A-Changelog 1.0.0"></a></p>
+
+<p>All notable changes to this project will be documented in this file.</p>
+
+<p>The format is based on <a href="https://keepachangelog.com/en/1.0.0/">Keep a Changelog</a>,<br>
+and this project adheres to <a href="https://semver.org/spec/v2.0.0.html">Semantic Versioning</a>,<br>
+and <a href="https://tom.preston-werner.com/2022/05/23/major-version-numbers-are-not-sacred.html">yes</a>, platform and engine support are part of the <a href="https://github.com/semver/semver/issues/716#issuecomment-869336139">public API</a>.<br>
+Please file a bug if you notice a violation of semantic versioning.</p>
+
+<h2 id="unreleased"><a href="https://github.com/kettle-rb/markly-merge/compare/v1.0.0...HEAD">Unreleased</a></h2>
+
+<h3 id="added">Added</h3>
+
+<ul>
+  <li>Documented the inherited <code>markdown-merge</code> full-document <code>remove_template_missing_nodes: true</code> contract in the wrapper README, including preserved standalone HTML comment-only fragments, link reference definitions, freeze blocks, and separator-boundary stability around kept standalone fragments.</li>
+  <li>Documented the inherited Markdown comment-ownership rollout for standalone HTML comment boundaries, matched-node fallback, partial-template link-definition preservation, and full-document fuzzy smart-merger parity through the thin wrapper.</li>
+  <li>Added focused wrapper parity coverage for inherited removal-mode follow-ups covering destination-owned consumed link definitions that outlive removed legacy blocks, skipped fenced-code / HTML literal false positives, and preservation of only the first effective duplicate destination label.</li>
+  <li>Added wrapper-parity shared layout compliance coverage so inherited Markdown block-gap ownership now follows the shared <code>Ast::Merge::Layout</code> contract through the Markly wrapper.</li>
+</ul>
+
+<h3 id="changed">Changed</h3>
+
+<ul>
+  <li>Clarified that <code>markly-merge</code> keeps partial-template <code>replace_mode</code> behavior separate from the shared top-level-only removal-mode contract and continues to defer generic inline-comment promotion plus recursive/nested removal semantics.</li>
+  <li>Clarified that broader removal-mode link-definition ownership, literal-context false-positive suppression, and duplicate-label normalization are all inherited from <code>markdown-merge</code> rather than wrapper-local logic.</li>
+</ul>
+
+<h3 id="deprecated">Deprecated</h3>
+
+<h3 id="removed">Removed</h3>
+
+<h3 id="fixed">Fixed</h3>
+
+<ul>
+  <li>Fixed multi-byte character (emoji) handling — upstream <code>ast-merge</code> <code>byteslice</code> → <code>slice</code> fix prevents corruption when merging content with multi-byte characters</li>
+</ul>
+
+<h3 id="security">Security</h3>
+
+<h2 id="100---2026-02-19">
+<a href="https://github.com/kettle-rb/markly-merge/compare/3dcd8b855b8a773f175ff34d31e3885a28a3e70b...v1.0.0">1.0.0</a> - 2026-02-19</h2>
+
+<ul>
+  <li>TAG: <a href="https://github.com/kettle-rb/markly-merge/tags/v1.0.0">v1.0.0</a>
+</li>
+  <li>COVERAGE: 83.82% – 171/204 lines in 7 files</li>
+  <li>BRANCH COVERAGE: 41.30% – 19/46 branches in 7 files</li>
+  <li>78.87% documented</li>
+</ul>
+
+<h3 id="added-1">Added</h3>
+
+<ul>
+  <li>AGENTS.md</li>
+  <li>Initial release of markly-merge</li>
+  <li>Thin wrapper around <code>markdown-merge</code> for Markly backend</li>
+  <li>
+<code>Markly::Merge::SmartMerger</code> - smart merging with markly defaults
+    <ul>
+      <li>Default freeze token: <code>"markly-merge"</code>
+</li>
+      <li>Default <code>inner_merge_code_blocks: true</code> (enabled by default)</li>
+    </ul>
+  </li>
+  <li>
+<code>Markly::Merge::FileAnalysis</code> - file analysis with markly backend</li>
+  <li>
+<code>Markly::Merge::FreezeNode</code> - freeze block support</li>
+  <li>Markly-specific parse options:
+    <ul>
+      <li>
+<code>flags:</code> - Markly parse flags (e.g., <code>Markly::FOOTNOTES</code>, <code>Markly::SMART</code>)</li>
+      <li>
+<code>extensions:</code> - GFM extensions (<code>:table</code>, <code>:strikethrough</code>, <code>:autolink</code>, <code>:tagfilter</code>, <code>:tasklist</code>)</li>
+    </ul>
+  </li>
+  <li>Error classes: <code>Error</code>, <code>ParseError</code>, <code>TemplateParseError</code>, <code>DestinationParseError</code>
+</li>
+  <li>Re-exports shared classes from markdown-merge:
+    <ul>
+      <li>
+<code>FileAligner</code>, <code>ConflictResolver</code>, <code>MergeResult</code>
+</li>
+      <li>
+<code>TableMatchAlgorithm</code>, <code>TableMatchRefiner</code>, <code>CodeBlockMerger</code>
+</li>
+      <li><code>NodeTypeNormalizer</code></li>
+    </ul>
+  </li>
+  <li>FFI backend isolation for test suite
+    <ul>
+      <li>Added <code>bin/rspec-ffi</code> script to run FFI specs in isolation (before MRI backend loads)</li>
+      <li>Added <code>spec/spec_ffi_helper.rb</code> for FFI-specific test configuration</li>
+      <li>Updated Rakefile with <code>ffi_specs</code> and <code>remaining_specs</code> tasks</li>
+      <li>The <code>:test</code> task now runs FFI specs first, then remaining specs</li>
+    </ul>
+  </li>
+  <li>
+<strong>MergeGemRegistry Integration</strong>: Registers with <code>Ast::Merge::RSpec::MergeGemRegistry</code>
+    <ul>
+      <li>Enables automatic RSpec dependency tag support</li>
+      <li>Registers as category <code>:markdown</code>
+</li>
+    </ul>
+  </li>
+  <li>Documentation on hostile takeover of RubyGems
+    <ul>
+      <li>https://dev.to/galtzo/hostile-takeover-of-rubygems-my-thoughts-5hlo</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="security-1">Security</h3>
+
+<h4 id="dependencies">Dependencies</h4>
+
+<ul>
+  <li>appraisal2 (v3.0.6)</li>
+  <li>kettle-test (v1.0.10)</li>
+  <li>stone_checksums (v1.0.3)</li>
+  <li>
+<a href="https://github.com/kettle-rb/ast-merge/releases/tag/v4.0.6">ast-merge (v4.0.6)</a> - shared merge infrastructure</li>
+  <li>
+<a href="https://github.com/kettle-rb/tree_haver/releases/tag/v5.0.5">tree_haver (v5.0.5)</a> - normalized AST conventions</li>
+  <li>
+<a href="https://github.com/kettle-rb/markdown-merge/releases/tag/v1.0.3">markdown-merge (v1.0.3)</a> - central merge infrastructure for markdown</li>
+  <li>tree_stump (v0.2.0)</li>
+  <li>markly (~&gt; 0.15) - cmark-gfm C library</li>
+  <li>version_gem (~&gt; 1.1) - smart versions for libraries</li>
+</ul>
+
+<h3 id="security-2">Security</h3>
+
+</div></div>
+
+      <div id="footer">
+  Generated on Sun Apr 12 11:49:37 2026 by
+  <a href="https://yardoc.org" title="Yay! A Ruby Documentation Tool" target="_parent">yard</a>
+  0.9.39 (ruby-4.0.2).
+</div>
+
+    </div>
+  </body>
+</html>
