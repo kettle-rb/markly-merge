@@ -3,7 +3,7 @@
 require "spec_helper"
 require "ast/merge/rspec/shared_examples"
 
-RSpec.describe "markly comment behavior matrix", :markly_backend do
+RSpec.describe Markly::Merge::SmartMerger, "comment behavior matrix", :markly_backend do
   extend Ast::Merge::RSpec::CommentBehaviorMatrixAdapters
 
   it_behaves_like "Ast::Merge::CommentBehaviorMatrix" do
