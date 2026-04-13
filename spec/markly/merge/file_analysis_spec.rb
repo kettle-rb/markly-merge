@@ -230,6 +230,11 @@ RSpec.describe Markly::Merge::FileAnalysis do
       analysis = described_class.new(commented_markdown)
 
       expect(analysis.comment_capability).to be_source_augmented if analysis.comment_capability.respond_to?(:source_augmented?)
+      expect(analysis.comment_support_style).to be_a(Ast::Merge::Comment::SupportStyle)
+      expect(analysis.comment_support_style.source_augmented_synthetic?).to be(true)
+      expect(analysis.comment_support_style.synthetic_write?).to be(true)
+      expect(analysis.comment_support_style.details[:source]).to eq(:markdown_source)
+      expect(analysis.comment_support_style.details[:style]).to eq(:html_comment)
       expect(analysis.comment_nodes.map(&:line_number)).to eq([1, 5, 9])
       expect(analysis.comment_node_at(5)&.text).to include("between sections")
     end
