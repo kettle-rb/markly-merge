@@ -22,7 +22,9 @@ RSpec.describe Markly::Merge::DebugLogger do
   describe ".debug" do
     context "when debug disabled" do
       before do
+        allow(ENV).to receive(:[]).and_call_original
         allow(ENV).to receive(:[]).with("MARKLY_MERGE_DEBUG").and_return(nil)
+        allow(ENV).to receive(:[]).with("KETTLE_DEV_DEBUG").and_return(nil)
       end
 
       it "does not output" do
@@ -32,7 +34,9 @@ RSpec.describe Markly::Merge::DebugLogger do
 
     context "when debug enabled" do
       before do
+        allow(ENV).to receive(:[]).and_call_original
         allow(ENV).to receive(:[]).with("MARKLY_MERGE_DEBUG").and_return("1")
+        allow(ENV).to receive(:[]).with("KETTLE_DEV_DEBUG").and_return(nil)
       end
 
       it "outputs debug message" do
@@ -59,7 +63,9 @@ RSpec.describe Markly::Merge::DebugLogger do
 
     context "when debug enabled" do
       before do
+        allow(ENV).to receive(:[]).and_call_original
         allow(ENV).to receive(:[]).with("MARKLY_MERGE_DEBUG").and_return("1")
+        allow(ENV).to receive(:[]).with("KETTLE_DEV_DEBUG").and_return(nil)
       end
 
       it "outputs timing info" do

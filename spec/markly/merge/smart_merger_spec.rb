@@ -1122,37 +1122,39 @@ RSpec.describe Markly::Merge::SmartMerger do
 
     context "when process_match uses template source" do
       # Tests for the :template branch in process_match (lines 213-215)
-      # This happens when preference is :template and content differs
-      # Lists match by type and item count, so two lists with same count
-      # but different content will match and trigger the template branch
+      # This happens when preference is :template and content differs, but the
+      # nodes are still matched by the refiner.
       let(:template) do
         <<~MARKDOWN
           # Same Heading
 
-          - Template item one
-          - Template item two
+          Template paragraph.
         MARKDOWN
       end
       let(:destination) do
         <<~MARKDOWN
           # Same Heading
 
-          - Destination item one
-          - Destination item two
+          Destination paragraph.
         MARKDOWN
+      end
+      let(:paragraph_refiner) do
+        Ast::Merge::ContentMatchRefiner.new(
+          threshold: 0.0,
+          node_types: [:paragraph],
+        )
       end
 
       it "uses template content when preference is :template" do
-        merger = described_class.new(template, destination, preference: :template)
+        merger = described_class.new(template, destination, preference: :template, match_refiner: paragraph_refiner)
         result = merger.merge_result
-        expect(result.content).to include("Template item one")
-        expect(result.content).not_to include("Destination item one")
+        expect(result.content).to include("Template paragraph.")
+        expect(result.content).not_to include("Destination paragraph.")
       end
 
       it "increments nodes_modified for non-identical matched content" do
-        merger = described_class.new(template, destination, preference: :template)
+        merger = described_class.new(template, destination, preference: :template, match_refiner: paragraph_refiner)
         result = merger.merge_result
-        # The list has different content but matches by signature (same type, same item count)
         expect(result.stats[:nodes_modified]).to be >= 1
       end
     end
