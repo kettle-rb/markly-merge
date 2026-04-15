@@ -351,8 +351,7 @@ RSpec.describe Markly::Merge::FileAnalysis do
     end
 
     it "returns signature for paragraph" do
-      paragraph = analysis.statements.find { |node| node.respond_to?(:type) && node.type == :paragraph }
-      skip "No paragraph found in statements" if paragraph.nil?
+      paragraph = analysis.statements.find { |node| node.respond_to?(:type) && node.type.to_s == "paragraph" }
 
       sig = analysis.signature_at(analysis.statements.index(paragraph))
       expect(sig).to be_an(Array)
