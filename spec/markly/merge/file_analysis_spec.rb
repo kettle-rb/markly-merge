@@ -244,7 +244,11 @@ RSpec.describe Markly::Merge::FileAnalysis do
       owner = analysis.statements.find { |stmt| stmt.merge_type == :heading }
 
       attachment = analysis.comment_attachment_for(owner)
-      expect(attachment.leading_region.nodes.map(&:line_number)).to eq([1])
+      expect(attachment.leading_region).to be_nil
+
+      augmenter = analysis.comment_augmenter
+      expect(augmenter.preamble_region&.normalized_content).to eq("preamble")
+      expect(augmenter.postlude_region&.normalized_content).to eq("postlude")
     end
   end
 
